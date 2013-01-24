@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+///////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2008-2013 Esri. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+///////////////////////////////////////////////////////////////////////////
+-->
+<viewer:BaseWidget xmlns:fx="http://ns.adobe.com/mxml/2009"
+                   xmlns:s="library://ns.adobe.com/flex/spark"
+                   xmlns:viewer="com.esri.viewer.*"
+                   x="600" y="300"
+                   currentState="mainState"
+                   widgetConfigLoaded="widgetConfigLoadedHandler()">
+    <!--
+    Description:
+    This file provides an example of what your starting codebase might
+    be for creating a custom widget.  This file contains all the code for creating
+    a widget with two user interfaces, a main panel and a settings panel.
+    These interfaces are represented by the mxml Group components with
+    ids named 'mainState' and 'settingsState'.
+
+    Most widgets will implement both BaseWidget and WidgetTemplate.  One key
+    aspect of BaseWidget is the event named widgetConfigLoaded, in this
+    example when the event is fired a function named widgetConfigLoadedHandler is called.
+    This is where you can do your preprocessing before the widget is presented to
+    the user interface.  It is at this point where we can parse the widget's
+    configuration file (configXML is the variable), as well as look into the
+    viewer's main configuration file (configData is the variable).
+
+    The WidgetTemplate's events 'closed', 'minimized', and 'open' are also very
+    important.  The functions called by these events are where you can
+    respond to the widget being closed, minimized, or opened from the user
+    interface.
+
+    Documentation:
+    See the resource center for more information.
+    http://resources.arcgis.com/en/help/flex-viewer/concepts/index.html#/Creating_widgets/01m300000010000000/
+    http://resources.arcgis.com/en/help/flex-viewer/concepts/index.html#/Widget_life_cycle/01m300000024000000/
+    -->
+    <viewer:states>
+        <s:State name="mainState"/>
+        <s:State name="settingsState"/>
+    </viewer:states>
+
+    <viewer:transitions>
+        <s:Transition autoReverse="true" toState="*">
+            <s:Fade targets="{[settingsState,mainState]}"/>
+        </s:Transition>
+    </viewer:transitions>
+    <fx:Script>
+        <![CDATA[
+            //-------------------------------
+            //	BEGIN: STEP 1 - ADD VARIABLES
+            //-------------------------------
+            private var ICON_URL:String;
+            [Bindable]
+            private var wWidth:Number = 400;
+            [Bindable]
+            private var wHeight:Number = 240;
+
+            [Bindable]
+            private var mainIcon:String;
+            [Bindable]
+            private var mainLabel:String;
+            [Bindable]
+            private var settingsIcon:String;
+            [Bindable]
+            private var settingsLabel:String;
+
+            private var useproxy:Boolean;
+            private var proxyurl:String;
+
+            /**
+             * Called by BaseWidget when widgetConfigLoaded event
+             * is fired.  This is where you will parse the widget's
+             * configuration file (if it has one), as well as get any
+             * information from the viewer's main configuration file.
+             * This is also where you would add any layers, or
+             * event listeners to the map which is also available
+             * to you at this time as a developer.
+             */
+            private function widgetConfigLoadedHandler():void
+            {
+                if (configXML)
+                {
+                    //configure widget width and height
+                    var mWidth:String = configXML.ui.widget_dimensions.width || "300";
+                    var mHeight:String = configXML.ui.widget_dimensions.height || "300";
+                    wWidth = Number(mWidth);
+                    wHeight = Number(mHeight);
+                    wTemplate.width = wWidth;
+                    wTemplate.height = wHeight;
+
+                    //configure UI: assets, icons, etc.
+                    ICON_URL = configXML.ui.icons.base_url || "assets/images";
+                    mainIcon = configXML.ui.icons.main_icon || "i_widget.png";
+                    mainLabel = configXML.ui.icons.main_label || "Main Panel";
+                    settingsIcon = configXML.ui.icons.settings_icon || "i_options.png";
+                    settingsLabel = configXML.ui.icons.settings_label || "Settings Panel";
+                    wTemplate.addTitlebarButton(ICON_URL + mainIcon, mainLabel, showStateMainUI);
+                    wTemplate.addTitlebarButton(ICON_URL + settingsIcon, settingsLabel, showStateSettingsUI);
+
+                    //ask the widget configuration if it wants to use a proxy
+                    useproxy = configXML.layers.layer.useproxy == "true";
+                    if (useproxy)
+                    {
+                        //configure proxy url from main configuration file
+                        proxyurl = configData.proxyUrl;
+                    }
+                    //after the map has loaded sucessfully interact with the map reference
+                    if (map.loaded)
+                    {
+                        //perform any logic related to the map
+                        //------------------------------------------------------
+                        //	BEGIN: STEP 5 - GET CONFIGURATION FROM WIDGET CONFIG
+                        //------------------------------------------------------
+                    }
+                }
+            }
+
+            //--------------------------------------
+            //  WidgetTemplate event handler functions
+            //--------------------------------------
+            /**
+             * Called when the widget is closed.  Use this event to
+             * process any logic when the widget is closed.  Such as
+             * clear any graphic layer graphics, selections,
+             * layer visibility, etc.
+             */
+            private function widgetClosedHandler(event:Event):void
+            {
+                //---------------------------------------------------------------
+                //	BEGIN: STEP 6 - HIDE DEMOGRAPHICS LAYER WHEN WIDGET IS CLOSED
+                //---------------------------------------------------------------
+            }
+
+            /**
+             * Called when the widget is opened.  Use this event to
+             * process any logic after the widget is opened.  Such as
+             * initializations or setup for the widget that might been
+             * cleared out when the widget was closed or minimized.
+             * Most often this event is used to make any layers visible
+             * that might have been turned off when the widget was closed.
+             */
+            private function widgetOpenedHandler(event:Event):void
+            {
+                //---------------------------------------------------------------
+                //	BEGIN: STEP 7 - SHOW DEMOGRAPHICS LAYER WHEN WIDGET IS OPENED
+                //---------------------------------------------------------------
+            }
+
+            /**
+             * Called when the widget is minimized.  Use this event to
+             * process any logic when the widget is minimized.
+             */
+            protected function widgetMinimizedHandler(event:Event):void
+            {
+            }
+
+            //---------------------------------------------
+            //	Functions for UI state changes
+            //---------------------------------------------
+            /**
+             * Called when the widget changes to the main state.
+             */
+            private function showStateMainUI():void
+            {
+                this.currentState = "mainState";
+            }
+
+            /**
+             * Called when the widget changes to the settings state.
+             */
+            private function showStateSettingsUI():void
+            {
+                this.currentState = "settingsState";
+            }
+            //------------------------------------
+            //	BEGIN: STEP 8 - ADD BUSINESS LOGIC
+            //------------------------------------
+        ]]>
+    </fx:Script>
+    <fx:Declarations>
+        <!--
+        //	BEGIN: STEP 2 - ADD ANY VARIABLE DECLARATIONS THROUGH MARKUP INSTEAD OF ACTIONSCRIPT
+        //-->
+
+    </fx:Declarations>
+    <viewer:WidgetTemplate id="wTemplate"
+                           closed="widgetClosedHandler(event)"
+                           minimized="widgetMinimizedHandler(event)"
+                           open="widgetOpenedHandler(event)"
+                           widgetHeight="{wHeight}"
+                           widgetWidth="{wWidth}">
+        <s:Group id="mainState"
+                 width="100%" height="100%"
+                 visible="false"
+                 visible.mainState="true">
+            <s:layout>
+                <s:VerticalLayout gap="6"
+                                  horizontalAlign="center"
+                                  paddingLeft="5"/>
+            </s:layout>
+            <!--
+            //	BEGIN STEP 3:  REPLACE Rect component WITH WIDGET MAIN UI
+            //-->
+            <s:Rect width="100%" height="100%">
+                <s:fill>
+                    <s:SolidColor color="{getStyle('focusColor')}"/>
+                </s:fill>
+            </s:Rect>
+        </s:Group>
+        <s:Group id="settingsState"
+                 width="100%" height="100%"
+                 visible="false"
+                 visible.settingsState="true">
+            <s:layout>
+                <s:VerticalLayout gap="6"
+                                  horizontalAlign="left"
+                                  paddingLeft="5"/>
+            </s:layout>
+            <!--
+            //	BEGIN STEP 4:  REPLACE Rect component WITH WIDGET SETTINGS UI
+            //-->
+            <s:Rect width="100%" height="100%">
+                <s:fill>
+                    <s:SolidColor color="0xFF0000"/>
+                </s:fill>
+            </s:Rect>
+        </s:Group>
+    </viewer:WidgetTemplate>
+</viewer:BaseWidget>
