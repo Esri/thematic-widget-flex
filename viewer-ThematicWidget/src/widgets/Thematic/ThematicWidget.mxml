@@ -159,8 +159,32 @@
                     {
                         //perform any logic related to the map
                         //------------------------------------------------------
-                        //	BEGIN: STEP 5 - GET CONFIGURATION FROM WIDGET CONFIG
+                        //  BEGIN: STEP 5 - GET CONFIGURATION FROM WIDGET CONFIG
                         //------------------------------------------------------
+                        demographicsLayer = new ArcGISDynamicMapServiceLayer();
+                        demographicsLayer.name = configXML.layers.layer.name || "Population 2007";
+                        demographicsLayer.addEventListener(LayerEvent.LOAD, demographicsLayer_loadHandler, false, 0, true);
+                        demographicsLayer.url = configXML.layers.layer.url || "http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer";
+                        demographicsLayer.proxyURL = proxyurl;
+
+                        detailsTask.url = configXML.layers.layer.url || "http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer";
+                        detailsTask.proxyURL = proxyurl;
+
+                        generateRendererTask.url = configXML.layers.layer.url + "/" + configXML.layers.layer.classificationLayerID;
+                        generateRendererTask.proxyURL = proxyurl;
+
+                        classificationLayerName = configXML.layers.layer.classificationLayerName || "states";
+                        _classificationField = configXML.layers.layer.classificationField || "POP07_SQMI";
+                        colorRamp.fromColor = uint(configXML.layers.layer.classificationFromColor) || uint(getStyle('chromeColor'));
+                        colorRamp.toColor = uint(configXML.layers.layer.classificationToColor) || uint(getStyle('focusColor'));
+
+                        var visibleLayer:Number = Number(configXML.layers.layer.classificationLayerID) || 3;
+                        demographicsLayer.visibleLayers = new ArrayList([ visibleLayer ]);
+
+                        map.addLayer(demographicsLayer);
+                            //----------------------------------------------------
+                            //  END: STEP 5 - GET CONFIGURATION FROM WIDGET CONFIG
+                            //----------------------------------------------------
                     }
                 }
             }
