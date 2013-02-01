@@ -61,8 +61,44 @@
     <fx:Script>
         <![CDATA[
             //-------------------------------
-            //	BEGIN: STEP 1 - ADD VARIABLES
+            //  BEGIN: STEP 1 - ADD VARIABLES
             //-------------------------------
+            import com.esri.ags.events.DetailsEvent;
+            import com.esri.ags.events.GenerateRendererEvent;
+            import com.esri.ags.events.LayerEvent;
+            import com.esri.ags.layers.ArcGISDynamicMapServiceLayer;
+            import com.esri.ags.layers.supportClasses.AllDetails;
+            import com.esri.ags.layers.supportClasses.DynamicLayerInfo;
+            import com.esri.ags.layers.supportClasses.LayerDetails;
+            import com.esri.ags.layers.supportClasses.LayerDrawingOptions;
+            import com.esri.ags.layers.supportClasses.LayerMapSource;
+            import com.esri.ags.renderers.ClassBreaksRenderer;
+            import com.esri.ags.tasks.supportClasses.ClassBreaksDefinition;
+            import com.esri.ags.tasks.supportClasses.GenerateRendererParameters;
+
+            import widgets.Thematic.skins.GRLegendSkin;
+
+            import mx.controls.Alert;
+            import mx.rpc.events.FaultEvent;
+
+            import spark.events.IndexChangeEvent;
+
+            private var dynamicLayerInfosArr:Array;
+            private var layerMapSource:LayerMapSource;
+            private var generateRendererParams:GenerateRendererParameters = new GenerateRendererParameters();
+            private var classBreaksDefinition:ClassBreaksDefinition = new ClassBreaksDefinition();
+
+            private var layerDetailsArr:Array = [];
+            private var _breakCount:Number = 6;
+            private var _classificationMethod:String = ClassBreaksDefinition.CLASSIFY_QUANTILE;
+            private var _classificationField:String;
+
+            [Bindable]
+            private var demographicsLayer:ArcGISDynamicMapServiceLayer;
+            private var classificationLayerName:String;
+            //-----------------------------
+            //  END: STEP 1 - ADD VARIABLES
+            //-----------------------------
             private var ICON_URL:String;
             [Bindable]
             private var wWidth:Number = 400;
@@ -193,9 +229,18 @@
     </fx:Script>
     <fx:Declarations>
         <!--
-        //	BEGIN: STEP 2 - ADD ANY VARIABLE DECLARATIONS THROUGH MARKUP INSTEAD OF ACTIONSCRIPT
+        //  BEGIN: STEP 2 - ADD ANY VARIABLE DECLARATIONS THROUGH MARKUP INSTEAD OF ACTIONSCRIPT
         //-->
-
+        <esri:DetailsTask id="detailsTask"
+                          fault="esriService_faultHandler(event)"
+                          getAllDetailsComplete="detailsTask_getAllDetailsCompleteHandler(event)"/>
+        <esri:GenerateRendererTask id="generateRendererTask"
+                                   executeComplete="generateRendererTask_executeCompleteHandler(event)"
+                                   fault="esriService_faultHandler(event)"/>
+        <esri:AlgorithmicColorRamp id="colorRamp" algorithm="esriHSVAlgorithm"/>
+        <!--
+        //  END: STEP 2 - ADD ANY VARIABLE DECLARATIONS THROUGH MARKUP INSTEAD OF ACTIONSCRIPT
+        //-->
     </fx:Declarations>
     <viewer:WidgetTemplate id="wTemplate"
                            closed="widgetClosedHandler(event)"
