@@ -258,13 +258,21 @@
                                   paddingLeft="5"/>
             </s:layout>
             <!--
-            //	BEGIN STEP 3:  REPLACE Rect component WITH WIDGET MAIN UI
+            //  BEGIN STEP 3:  REPLACE Rect component WITH WIDGET MAIN UI
             //-->
-            <s:Rect width="100%" height="100%">
-                <s:fill>
-                    <s:SolidColor color="{getStyle('focusColor')}"/>
-                </s:fill>
-            </s:Rect>
+            <s:Scroller width="100%" height="100%">
+                <s:VGroup>
+
+                    <esri:Legend id="legend"
+                                 left="5" right="5" top="5" bottom="5"
+                                 layers="{[demographicsLayer]}"
+                                 map="{map}"
+                                 skinClass="widgets.Thematic.skins.GRLegendSkin"/>
+                </s:VGroup>
+            </s:Scroller>
+            <!--
+            //  END STEP 3:  REPLACE Rect component WITH WIDGET MAIN UI
+            //-->
         </s:Group>
         <s:Group id="settingsState"
                  width="100%" height="100%"
@@ -276,13 +284,35 @@
                                   paddingLeft="5"/>
             </s:layout>
             <!--
-            //	BEGIN STEP 4:  REPLACE Rect component WITH WIDGET SETTINGS UI
+            //  BEGIN STEP 4:  REPLACE Rect component WITH WIDGET SETTINGS UI
             //-->
-            <s:Rect width="100%" height="100%">
-                <s:fill>
-                    <s:SolidColor color="0xFF0000"/>
-                </s:fill>
-            </s:Rect>
+            <s:HGroup width="100%"
+                      gap="5"
+                      verticalAlign="middle">
+                <s:Label text="Classification"/>
+                <s:DropDownList width="100%"
+                                change="classification_changeHandler(event)"
+                                requireSelection="true"
+                                selectedIndex="1">
+                    <s:dataProvider>
+                        <s:ArrayList>
+                            <fx:Object data="{ClassBreaksDefinition.CLASSIFY_NATURAL_BREAKS}" label="Natural Breaks"/>
+                            <fx:Object data="{ClassBreaksDefinition.CLASSIFY_QUANTILE}" label="Quantile"/>
+                        </s:ArrayList>
+                    </s:dataProvider>
+                </s:DropDownList>
+            </s:HGroup>
+            <s:HGroup gap="5" verticalAlign="middle">
+                <s:Label text="Class Breaks"/>
+                <s:NumericStepper id="numberOfClassBreaks"
+                                  change="numberOfClassBreaks_changeHandler(event)"
+                                  maximum="11"
+                                  minimum="5"
+                                  value="6"/>
+            </s:HGroup>
+            <!--
+            //  END STEP 4:  REPLACE Rect component WITH WIDGET SETTINGS UI
+            //-->
         </s:Group>
     </viewer:WidgetTemplate>
 </viewer:BaseWidget>
