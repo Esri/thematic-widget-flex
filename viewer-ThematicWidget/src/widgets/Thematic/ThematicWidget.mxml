@@ -19,6 +19,7 @@
 <viewer:BaseWidget xmlns:fx="http://ns.adobe.com/mxml/2009"
                    xmlns:s="library://ns.adobe.com/flex/spark"
                    xmlns:viewer="com.esri.viewer.*"
+                   xmlns:esri="http://www.esri.com/2008/ags"
                    x="600" y="300"
                    currentState="mainState"
                    widgetConfigLoaded="widgetConfigLoadedHandler()">
@@ -260,9 +261,81 @@
             {
                 this.currentState = "settingsState";
             }
+
             //------------------------------------
             //	BEGIN: STEP 8 - ADD BUSINESS LOGIC
             //------------------------------------
+            protected function demographicsLayer_loadHandler(event:LayerEvent):void
+            {
+                dynamicLayerInfosArr = demographicsLayer.createDynamicLayerInfosFromLayerInfos();
+                detailsTask.getAllDetails();
+            }
+
+            protected function detailsTask_getAllDetailsCompleteHandler(event:DetailsEvent):void
+            {
+                var details:AllDetails = event.allDetails;
+                layerDetailsArr = details.layersDetails;
+                var layerDetails:LayerDetails;
+
+                for (var i:int = 0; i < layerDetailsArr.length; i++)
+                {
+                    layerDetails = layerDetailsArr[i];
+                    if (layerDetails.name.toLowerCase() == classificationLayerName && dynamicLayerInfosArr)
+                    {
+                        layerMapSource = DynamicLayerInfo(dynamicLayerInfosArr[i]).source as LayerMapSource;
+                        generateRendererTask.source = layerMapSource;
+                        classBreaksDefinition.breakCount = _breakCount;
+                        classBreaksDefinition.classificationField = _classificationField;
+                        classBreaksDefinition.classificationMethod = _classificationMethod;
+                        classBreaksDefinition.colorRamp = colorRamp;
+                        generateRendererParams.classificationDefinition = classBreaksDefinition;
+                        generateRendererTask.execute(generateRendererParams);
+                    }
+                }
+            }
+
+            protected function esriService_faultHandler(event:FaultEvent):void
+            {
+                Alert.show("Error: " + event.fault.faultString, "Error code: " + event.fault.faultCode);
+            }
+
+            protected function generateRendererTask_executeCompleteHandler(event:GenerateRendererEvent):void
+            {
+                var renderer:ClassBreaksRenderer = event.renderer as ClassBreaksRenderer;
+                var layerDrawingOptions:LayerDrawingOptions = new LayerDrawingOptions();
+                layerDrawingOptions.layerId = layerMapSource.mapLayerId; //states layer id in the service
+                layerDrawingOptions.renderer = renderer;
+                demographicsLayer.alpha = 0.7;
+                var layerDrawingOptionsArr:Array = [ layerDrawingOptions ];
+                demographicsLayer.layerDrawingOptions = layerDrawingOptionsArr;
+                legend.layers = [ demographicsLayer ];
+            }
+
+            protected function classification_changeHandler(event:IndexChangeEvent):void
+            {
+                var selectedItem:Object = DropDownList(event.currentTarget).selectedItem;
+                _classificationMethod = selectedItem.data;
+                generateRenderer();
+            }
+
+            protected function numberOfClassBreaks_changeHandler(event:Event):void
+            {
+                _breakCount = NumericStepper(event.currentTarget).value;
+                generateRenderer();
+            }
+
+            protected function generateRenderer():void
+            {
+                classBreaksDefinition.breakCount = _breakCount;
+                classBreaksDefinition.classificationMethod = _classificationMethod;
+                generateRendererParams.classificationDefinition = classBreaksDefinition;
+                classBreaksDefinition.colorRamp = colorRamp;
+                generateRendererTask.execute(generateRendererParams);
+            }
+
+            //----------------------------------
+            //  END: STEP 8 - ADD BUSINESS LOGIC
+            //----------------------------------
         ]]>
     </fx:Script>
     <fx:Declarations>
