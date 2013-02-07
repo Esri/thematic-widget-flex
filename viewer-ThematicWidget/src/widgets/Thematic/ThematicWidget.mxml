@@ -203,6 +203,13 @@
                 //---------------------------------------------------------------
                 //	BEGIN: STEP 6 - HIDE DEMOGRAPHICS LAYER WHEN WIDGET IS CLOSED
                 //---------------------------------------------------------------
+                if (demographicsLayer)
+                {
+                    demographicsLayer.visible = false;
+                }
+                //-------------------------------------------------------------
+                //  END: STEP 6 - HIDE DEMOGRAPHICS LAYER WHEN WIDGET IS CLOSED
+                //-------------------------------------------------------------
             }
 
             /**
@@ -218,6 +225,13 @@
                 //---------------------------------------------------------------
                 //	BEGIN: STEP 7 - SHOW DEMOGRAPHICS LAYER WHEN WIDGET IS OPENED
                 //---------------------------------------------------------------
+                if (demographicsLayer)
+                {
+                    demographicsLayer.visible = true;
+                }
+                //-------------------------------------------------------------
+                //  END: STEP 7 - SHOW DEMOGRAPHICS LAYER WHEN WIDGET IS OPENED
+                //-------------------------------------------------------------
             }
 
             /**
