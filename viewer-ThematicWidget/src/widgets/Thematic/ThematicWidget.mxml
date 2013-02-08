@@ -96,6 +96,8 @@
 
             [Bindable]
             private var demographicsLayer:ArcGISDynamicMapServiceLayer;
+            [Bindable]
+            private var thematicLayerAlpha:Number;
             private var classificationLayerName:String;
             //-----------------------------
             //  END: STEP 1 - ADD VARIABLES
@@ -114,6 +116,8 @@
             private var settingsIcon:String;
             [Bindable]
             private var settingsLabel:String;
+            [Bindable]
+            private var transpCompLabel:String;
 
             private var useproxy:Boolean;
             private var proxyurl:String;
@@ -145,6 +149,10 @@
                     mainLabel = configXML.ui.icons.main_label || "Main Panel";
                     settingsIcon = configXML.ui.icons.settings_icon || "i_options.png";
                     settingsLabel = configXML.ui.icons.settings_label || "Settings Panel";
+                    //transparency
+                    thematicLayerAlpha = Number(configXML.ui.transparency.defaulttransparency) || 1.0;
+                    transpCompLabel = configXML.ui.transparency.comp_label || "Transparency:";
+
                     wTemplate.addTitlebarButton(ICON_URL + mainIcon, mainLabel, showStateMainUI);
                     wTemplate.addTitlebarButton(ICON_URL + settingsIcon, settingsLabel, showStateSettingsUI);
 
@@ -163,6 +171,7 @@
                         //  BEGIN: STEP 5 - GET CONFIGURATION FROM WIDGET CONFIG
                         //------------------------------------------------------
                         demographicsLayer = new ArcGISDynamicMapServiceLayer();
+                        demographicsLayer.alpha = thematicLayerAlpha;
                         demographicsLayer.name = configXML.layers.layer.name || "Population 2007";
                         demographicsLayer.addEventListener(LayerEvent.LOAD, demographicsLayer_loadHandler, false, 0, true);
                         demographicsLayer.url = configXML.layers.layer.url || "http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer";
@@ -336,6 +345,12 @@
             //----------------------------------
             //  END: STEP 8 - ADD BUSINESS LOGIC
             //----------------------------------
+
+            protected function transparencyChangeHandler(event:Event):void
+            {
+                thematicLayerAlpha = sliderTransparency.value;
+                demographicsLayer.alpha = thematicLayerAlpha;
+            }
         ]]>
     </fx:Script>
     <fx:Declarations>
@@ -394,6 +409,23 @@
                                   horizontalAlign="left"
                                   paddingLeft="5"/>
             </s:layout>
+            <!-- transparency UI -->
+            <s:HGroup id="boxTransp"
+                      width="100%"
+                      gap="15"
+                      horizontalAlign="left">
+                <s:Label id="lblLayerTransp"
+                         width="100"
+                         text="{transpCompLabel}"/>
+                <s:HSlider id="sliderTransparency"
+                           change="transparencyChangeHandler(event)"
+                           liveDragging="true"
+                           maximum="1"
+                           minimum="0"
+                           showDataTip="true"
+                           stepSize="0.1"
+                           value="{thematicLayerAlpha}"/>
+            </s:HGroup>
             <!--
             //  BEGIN STEP 4:  REPLACE Rect component WITH WIDGET SETTINGS UI
             //-->

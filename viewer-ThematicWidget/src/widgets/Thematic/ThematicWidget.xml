@@ -44,5 +44,9 @@
             <settings_icon>i_options.png</settings_icon>
             <settings_label>Settings Panel</settings_label>
         </icons>
+        <transparency>
+            <comp_label>Transparency:</comp_label>
+            <defaulttransparency>0.8</defaulttransparency>
+        </transparency>
     </ui>
 </configuration>
