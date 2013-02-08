@@ -18,6 +18,7 @@
 -->
 <viewer:BaseWidget xmlns:fx="http://ns.adobe.com/mxml/2009"
                    xmlns:s="library://ns.adobe.com/flex/spark"
+                   xmlns:mx="library://ns.adobe.com/flex/mx"
                    xmlns:viewer="com.esri.viewer.*"
                    xmlns:esri="http://www.esri.com/2008/ags"
                    x="600" y="300"
@@ -61,9 +62,6 @@
     </viewer:transitions>
     <fx:Script>
         <![CDATA[
-            //-------------------------------
-            //  BEGIN: STEP 1 - ADD VARIABLES
-            //-------------------------------
             import com.esri.ags.events.DetailsEvent;
             import com.esri.ags.events.GenerateRendererEvent;
             import com.esri.ags.events.LayerEvent;
@@ -77,12 +75,13 @@
             import com.esri.ags.tasks.supportClasses.ClassBreaksDefinition;
             import com.esri.ags.tasks.supportClasses.GenerateRendererParameters;
 
-            import widgets.Thematic.skins.GRLegendSkin;
-
             import mx.controls.Alert;
+            import mx.events.ColorPickerEvent;
             import mx.rpc.events.FaultEvent;
 
             import spark.events.IndexChangeEvent;
+
+            import widgets.Thematic.skins.GRLegendSkin;
 
             private var dynamicLayerInfosArr:Array;
             private var layerMapSource:LayerMapSource;
@@ -118,6 +117,14 @@
             private var settingsLabel:String;
             [Bindable]
             private var transpCompLabel:String;
+            [Bindable]
+            private var toColorLabel:String;
+            [Bindable]
+            private var fromColorLabel:String;
+            [Bindable]
+            private var colorRampFromSelectedColor:uint;
+            [Bindable]
+            private var colorRampToSelectedColor:uint;
 
             private var useproxy:Boolean;
             private var proxyurl:String;
@@ -152,6 +159,11 @@
                     //transparency
                     thematicLayerAlpha = Number(configXML.ui.transparency.defaulttransparency) || 1.0;
                     transpCompLabel = configXML.ui.transparency.comp_label || "Transparency:";
+                    //color ramps
+                    fromColorLabel = configXML.ui.color_ramp.fromColorLabel || "From Color:";
+                    toColorLabel = configXML.ui.color_ramp.toColorLabel || "To Color:";
+                    colorRampFromSelectedColor = uint(configXML.ui.color_ramp.classificationFromColor) || uint(getStyle('chromeColor'));
+                    colorRampToSelectedColor = uint(configXML.ui.color_ramp.classificationToColor) || uint(getStyle('focusColor'));
 
                     wTemplate.addTitlebarButton(ICON_URL + mainIcon, mainLabel, showStateMainUI);
                     wTemplate.addTitlebarButton(ICON_URL + settingsIcon, settingsLabel, showStateSettingsUI);
@@ -185,8 +197,6 @@
 
                         classificationLayerName = configXML.layers.layer.classificationLayerName || "states";
                         _classificationField = configXML.layers.layer.classificationField || "POP07_SQMI";
-                        colorRamp.fromColor = uint(configXML.layers.layer.classificationFromColor) || uint(getStyle('chromeColor'));
-                        colorRamp.toColor = uint(configXML.layers.layer.classificationToColor) || uint(getStyle('focusColor'));
 
                         var visibleLayer:Number = Number(configXML.layers.layer.classificationLayerID) || 3;
                         demographicsLayer.visibleLayers = new ArrayList([ visibleLayer ]);
@@ -296,6 +306,8 @@
                         classBreaksDefinition.breakCount = _breakCount;
                         classBreaksDefinition.classificationField = _classificationField;
                         classBreaksDefinition.classificationMethod = _classificationMethod;
+                        colorRamp.fromColor = colorRampFromSelectedColor;
+                        colorRamp.toColor = colorRampToSelectedColor;
                         classBreaksDefinition.colorRamp = colorRamp;
                         generateRendererParams.classificationDefinition = classBreaksDefinition;
                         generateRendererTask.execute(generateRendererParams);
@@ -338,6 +350,8 @@
                 classBreaksDefinition.breakCount = _breakCount;
                 classBreaksDefinition.classificationMethod = _classificationMethod;
                 generateRendererParams.classificationDefinition = classBreaksDefinition;
+                colorRamp.fromColor = colorRampFromSelectedColor;
+                colorRamp.toColor = colorRampToSelectedColor;
                 classBreaksDefinition.colorRamp = colorRamp;
                 generateRendererTask.execute(generateRendererParams);
             }
@@ -350,6 +364,12 @@
             {
                 thematicLayerAlpha = sliderTransparency.value;
                 demographicsLayer.alpha = thematicLayerAlpha;
+            }
+
+            protected function colorRamp_changeHandler(event:ColorPickerEvent):void
+            {
+                event.currentTarget.id == "colorRampFromColor" ? colorRampFromSelectedColor = event.color : colorRampToSelectedColor = event.color;
+                generateRenderer();
             }
         ]]>
     </fx:Script>
@@ -409,10 +429,69 @@
                                   horizontalAlign="left"
                                   paddingLeft="5"/>
             </s:layout>
+            <!--
+             //  BEGIN STEP 4:  REPLACE Rect component WITH WIDGET SETTINGS UI
+             //-->
+            <s:HGroup width="100%"
+                      gap="5"
+                      horizontalAlign="left"
+                      verticalAlign="middle">
+                <s:Label width="100" text="Classification"/>
+                <s:DropDownList width="100%"
+                                change="classification_changeHandler(event)"
+                                requireSelection="true"
+                                selectedIndex="1">
+                    <s:dataProvider>
+                        <s:ArrayList>
+                            <fx:Object data="{ClassBreaksDefinition.CLASSIFY_NATURAL_BREAKS}" label="Natural Breaks"/>
+                            <fx:Object data="{ClassBreaksDefinition.CLASSIFY_QUANTILE}" label="Quantile"/>
+                        </s:ArrayList>
+                    </s:dataProvider>
+                </s:DropDownList>
+            </s:HGroup>
+            <s:HGroup width="100%"
+                      gap="5"
+                      horizontalAlign="left"
+                      verticalAlign="middle">
+                <s:Label width="100" text="Class Breaks"/>
+                <s:NumericStepper id="numberOfClassBreaks"
+                                  change="numberOfClassBreaks_changeHandler(event)"
+                                  maximum="11"
+                                  minimum="5"
+                                  value="6"/>
+            </s:HGroup>
+            <!--
+            //  END STEP 4:  REPLACE Rect component WITH WIDGET SETTINGS UI
+            //-->
+            <!-- color ramp UI -->
+            <s:HGroup id="boxToColor"
+                      width="100%"
+                      gap="5"
+                      horizontalAlign="left"
+                      verticalAlign="middle">
+                <s:Label id="lblToColor"
+                         width="100"
+                         text="{toColorLabel}"/>
+                <mx:ColorPicker id="colorRampToColor"
+                                change="colorRamp_changeHandler(event)"
+                                selectedColor="{colorRampToSelectedColor}"/>
+            </s:HGroup>
+            <s:HGroup id="boxFromColor"
+                      width="100%"
+                      gap="5"
+                      horizontalAlign="left"
+                      verticalAlign="middle">
+                <s:Label id="lblFromColor"
+                         width="100"
+                         text="{fromColorLabel}"/>
+                <mx:ColorPicker id="colorRampFromColor"
+                                change="colorRamp_changeHandler(event)"
+                                selectedColor="{colorRampFromSelectedColor}"/>
+            </s:HGroup>
             <!-- transparency UI -->
             <s:HGroup id="boxTransp"
                       width="100%"
-                      gap="15"
+                      gap="5"
                       horizontalAlign="left">
                 <s:Label id="lblLayerTransp"
                          width="100"
@@ -426,36 +505,7 @@
                            stepSize="0.1"
                            value="{thematicLayerAlpha}"/>
             </s:HGroup>
-            <!--
-            //  BEGIN STEP 4:  REPLACE Rect component WITH WIDGET SETTINGS UI
-            //-->
-            <s:HGroup width="100%"
-                      gap="5"
-                      verticalAlign="middle">
-                <s:Label text="Classification"/>
-                <s:DropDownList width="100%"
-                                change="classification_changeHandler(event)"
-                                requireSelection="true"
-                                selectedIndex="1">
-                    <s:dataProvider>
-                        <s:ArrayList>
-                            <fx:Object data="{ClassBreaksDefinition.CLASSIFY_NATURAL_BREAKS}" label="Natural Breaks"/>
-                            <fx:Object data="{ClassBreaksDefinition.CLASSIFY_QUANTILE}" label="Quantile"/>
-                        </s:ArrayList>
-                    </s:dataProvider>
-                </s:DropDownList>
-            </s:HGroup>
-            <s:HGroup gap="5" verticalAlign="middle">
-                <s:Label text="Class Breaks"/>
-                <s:NumericStepper id="numberOfClassBreaks"
-                                  change="numberOfClassBreaks_changeHandler(event)"
-                                  maximum="11"
-                                  minimum="5"
-                                  value="6"/>
-            </s:HGroup>
-            <!--
-            //  END STEP 4:  REPLACE Rect component WITH WIDGET SETTINGS UI
-            //-->
+
         </s:Group>
     </viewer:WidgetTemplate>
 </viewer:BaseWidget>
