@@ -75,6 +75,7 @@
             import com.esri.ags.tasks.supportClasses.ClassBreaksDefinition;
             import com.esri.ags.tasks.supportClasses.GenerateRendererParameters;
 
+            import mx.collections.ArrayList;
             import mx.controls.Alert;
             import mx.events.ColorPickerEvent;
             import mx.rpc.events.FaultEvent;
@@ -82,6 +83,7 @@
             import spark.events.IndexChangeEvent;
 
             import widgets.Thematic.skins.GRLegendSkin;
+            import widgets.Thematic.utils.UIComponentUtil;
 
             private var dynamicLayerInfosArr:Array;
             private var layerMapSource:LayerMapSource;
@@ -117,6 +119,7 @@
             private var settingsLabel:String;
             [Bindable]
             private var transpCompLabel:String;
+            //color ramps
             [Bindable]
             private var toColorLabel:String;
             [Bindable]
@@ -125,6 +128,13 @@
             private var colorRampFromSelectedColor:uint;
             [Bindable]
             private var colorRampToSelectedColor:uint;
+            //classification
+            [Bindable]
+            private var classificationMethodsLabel:String;
+            [Bindable]
+            private var classificationFieldsLabel:String;
+            [Bindable]
+            private var classificationBreaksLabel:String;
 
             private var useproxy:Boolean;
             private var proxyurl:String;
@@ -164,6 +174,30 @@
                     toColorLabel = configXML.ui.color_ramp.toColorLabel || "To Color:";
                     colorRampFromSelectedColor = uint(configXML.ui.color_ramp.classificationFromColor) || uint(getStyle('chromeColor'));
                     colorRampToSelectedColor = uint(configXML.ui.color_ramp.classificationToColor) || uint(getStyle('focusColor'));
+                    //classification labels
+                    var classificationMethodsLabelPrompt:String = configXML.ui.classification.methodsLabelPrompt || "Select a type";
+                    classificationMethodsLabel = configXML.ui.classification.methodsLabel || "Class Methods";
+                    var classificationFieldsLabelPrompt:String = configXML.ui.classification.fieldsLabelPrompt || "Select a type";
+                    classificationFieldsLabel = configXML.ui.classification.fieldsLabel || "Class Fields";
+                    classificationBreaksLabel = configXML.ui.classification.breaksLabel || "Class Breaks";
+                    //classification methods
+                    var classificationMethodsLabelConfig:String = configXML.layers.layer.classificationMethodTypeDescs;
+                    var classificationMethodsDataConfig:String = configXML.layers.layer.classificationMethodTypes;
+                    classificationMethodsDDL.dataProvider = UIComponentUtil.getComboBoxDataProvider(classificationMethodsLabelConfig, classificationMethodsDataConfig, classificationMethodsLabelPrompt);
+                    classificationMethodsDDL.selectedIndex = 1;
+                    //classification fields
+                    var classificationFieldsLabelConfig:String = configXML.layers.layer.classificationFieldTypeDescs;
+                    var classificationFieldsDataConfig:String = configXML.layers.layer.classificationFieldTypes;
+                    classificationFieldsDDL.dataProvider = UIComponentUtil.getComboBoxDataProvider(classificationFieldsLabelConfig, classificationFieldsDataConfig, classificationFieldsLabelPrompt);
+                    classificationFieldsDDL.selectedIndex = 1;
+                    _classificationField = classificationFieldsDDL.selectedItem.data || "POP07_SQMI";
+                    //classification breaks
+                    var classificationMinimumNumberOfBreaks:Number = Number(configXML.layers.layer.classificationBreaksMin) || 5;
+                    var classificationMaximumNumberOfBreaks:Number = Number(configXML.layers.layer.classificationBreaksMax) || 11;
+                    var classificationDefaultNumberOfBreaks:Number = Number(configXML.layers.layer.classificationBreaksDefault) || 6;
+                    numberOfClassBreaks.minimum = classificationMinimumNumberOfBreaks;
+                    numberOfClassBreaks.maximum = classificationMaximumNumberOfBreaks;
+                    numberOfClassBreaks.value = classificationDefaultNumberOfBreaks;
 
                     wTemplate.addTitlebarButton(ICON_URL + mainIcon, mainLabel, showStateMainUI);
                     wTemplate.addTitlebarButton(ICON_URL + settingsIcon, settingsLabel, showStateSettingsUI);
@@ -196,7 +230,6 @@
                         generateRendererTask.proxyURL = proxyurl;
 
                         classificationLayerName = configXML.layers.layer.classificationLayerName || "states";
-                        _classificationField = configXML.layers.layer.classificationField || "POP07_SQMI";
 
                         var visibleLayer:Number = Number(configXML.layers.layer.classificationLayerID) || 3;
                         demographicsLayer.visibleLayers = new ArrayList([ visibleLayer ]);
@@ -330,12 +363,26 @@
                 var layerDrawingOptionsArr:Array = [ layerDrawingOptions ];
                 demographicsLayer.layerDrawingOptions = layerDrawingOptionsArr;
                 legend.layers = [ demographicsLayer ];
+                legend.refresh();
             }
 
-            protected function classification_changeHandler(event:IndexChangeEvent):void
+            protected function classificationMethodsDDL_changeHandler(event:IndexChangeEvent):void
             {
-                var selectedItem:Object = DropDownList(event.currentTarget).selectedItem;
-                _classificationMethod = selectedItem.data;
+                var selectedMethodItem:String = DropDownList(event.currentTarget).selectedItem.data;
+                if (selectedMethodItem != "-1")
+                {
+                    _classificationMethod = selectedMethodItem;
+                }
+                generateRenderer();
+            }
+
+            protected function classificationFieldsDDL_changeHandler(event:IndexChangeEvent):void
+            {
+                var selectedFieldItem:String = DropDownList(event.currentTarget).selectedItem.data;
+                if (selectedFieldItem != "-1")
+                {
+                    _classificationField = selectedFieldItem;
+                }
                 generateRenderer();
             }
 
@@ -348,11 +395,12 @@
             protected function generateRenderer():void
             {
                 classBreaksDefinition.breakCount = _breakCount;
+                classBreaksDefinition.classificationField = _classificationField;
                 classBreaksDefinition.classificationMethod = _classificationMethod;
-                generateRendererParams.classificationDefinition = classBreaksDefinition;
                 colorRamp.fromColor = colorRampFromSelectedColor;
                 colorRamp.toColor = colorRampToSelectedColor;
                 classBreaksDefinition.colorRamp = colorRamp;
+                generateRendererParams.classificationDefinition = classBreaksDefinition;
                 generateRendererTask.execute(generateRendererParams);
             }
 
@@ -408,7 +456,6 @@
             //-->
             <s:Scroller width="100%" height="100%">
                 <s:VGroup>
-
                     <esri:Legend id="legend"
                                  left="5" right="5" top="5" bottom="5"
                                  layers="{[demographicsLayer]}"
@@ -432,33 +479,36 @@
             <!--
              //  BEGIN STEP 4:  REPLACE Rect component WITH WIDGET SETTINGS UI
              //-->
-            <s:HGroup width="100%"
+            <s:HGroup id="boxClassificationMethods"
+                      width="100%"
                       gap="5"
                       horizontalAlign="left"
                       verticalAlign="middle">
-                <s:Label width="100" text="Classification"/>
-                <s:DropDownList width="100%"
-                                change="classification_changeHandler(event)"
-                                requireSelection="true"
-                                selectedIndex="1">
-                    <s:dataProvider>
-                        <s:ArrayList>
-                            <fx:Object data="{ClassBreaksDefinition.CLASSIFY_NATURAL_BREAKS}" label="Natural Breaks"/>
-                            <fx:Object data="{ClassBreaksDefinition.CLASSIFY_QUANTILE}" label="Quantile"/>
-                        </s:ArrayList>
-                    </s:dataProvider>
-                </s:DropDownList>
+                <s:Label width="100" text="{classificationMethodsLabel}"/>
+                <s:DropDownList id="classificationMethodsDDL"
+                                width="100%"
+                                change="classificationMethodsDDL_changeHandler(event)"
+                                requireSelection="true"/>
             </s:HGroup>
-            <s:HGroup width="100%"
+            <s:HGroup id="boxClassificationFields"
+                      width="100%"
                       gap="5"
                       horizontalAlign="left"
                       verticalAlign="middle">
-                <s:Label width="100" text="Class Breaks"/>
-                <s:NumericStepper id="numberOfClassBreaks"
-                                  change="numberOfClassBreaks_changeHandler(event)"
-                                  maximum="11"
-                                  minimum="5"
-                                  value="6"/>
+                <s:Label width="100" text="{classificationFieldsLabel}"/>
+                <s:DropDownList id="classificationFieldsDDL"
+                                width="100%"
+                                change="classificationFieldsDDL_changeHandler(event)"
+                                requireSelection="true"
+                                selectedIndex="1"/>
+            </s:HGroup>
+            <s:HGroup id="boxClassificationBreaks"
+                      width="100%"
+                      gap="5"
+                      horizontalAlign="left"
+                      verticalAlign="middle">
+                <s:Label width="100" text="{classificationBreaksLabel}"/>
+                <s:NumericStepper id="numberOfClassBreaks" change="numberOfClassBreaks_changeHandler(event)"/>
             </s:HGroup>
             <!--
             //  END STEP 4:  REPLACE Rect component WITH WIDGET SETTINGS UI
@@ -473,6 +523,7 @@
                          width="100"
                          text="{toColorLabel}"/>
                 <mx:ColorPicker id="colorRampToColor"
+                                width="53"
                                 change="colorRamp_changeHandler(event)"
                                 selectedColor="{colorRampToSelectedColor}"/>
             </s:HGroup>
@@ -485,6 +536,7 @@
                          width="100"
                          text="{fromColorLabel}"/>
                 <mx:ColorPicker id="colorRampFromColor"
+                                width="53"
                                 change="colorRamp_changeHandler(event)"
                                 selectedColor="{colorRampFromSelectedColor}"/>
             </s:HGroup>
@@ -492,11 +544,13 @@
             <s:HGroup id="boxTransp"
                       width="100%"
                       gap="5"
-                      horizontalAlign="left">
+                      horizontalAlign="left"
+                      verticalAlign="middle">
                 <s:Label id="lblLayerTransp"
                          width="100"
                          text="{transpCompLabel}"/>
                 <s:HSlider id="sliderTransparency"
+                           width="100%"
                            change="transparencyChangeHandler(event)"
                            liveDragging="true"
                            maximum="1"
