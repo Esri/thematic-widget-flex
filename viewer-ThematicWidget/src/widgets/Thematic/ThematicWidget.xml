@@ -24,8 +24,6 @@
             <classificationLayerName>states</classificationLayerName>
             <classificationLayerID>3</classificationLayerID>
             <classificationField>POP07_SQMI</classificationField>
-            <classificationFromColor>0x0D538A</classificationFromColor>
-            <classificationToColor>0xCECECE</classificationToColor>
             <useproxy>false</useproxy>
         </layer>
     </layers>
@@ -45,8 +43,14 @@
             <settings_label>Settings Panel</settings_label>
         </icons>
         <transparency>
-            <comp_label>Transparency:</comp_label>
+            <comp_label>Transparency</comp_label>
             <defaulttransparency>0.8</defaulttransparency>
         </transparency>
+        <color_ramp>
+            <fromColorLabel>Lower values</fromColorLabel>
+            <classificationFromColor>0xCECECE</classificationFromColor>
+            <toColorLabel>Higher values</toColorLabel>
+            <classificationToColor>0x0D538A</classificationToColor>
+        </color_ramp>
     </ui>
 </configuration>
