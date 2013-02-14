@@ -8,7 +8,7 @@ There are many ways you can contribute to the [ArcGIS Viewer for Flex Thematic W
 
 This guide describes how you can contribute improvements to the ArcGIS Viewer for Flex Thematic Widget source code.
 
-The [ArcGIS Viewer for Flex Thematic Widget](http://www.arcgis.com/home/item.html?id=ced1ad5fe30f4304adb056cdcbdc9ad0) is a sample widget that was originally built by Lloyd Heberlie at [Esri](http://www.esri.com) and has had many contributions from the Flex Team at [Esri](http://www.esri.com). We are excited that you are interested in improving the thematic-widget-flex source code. This guide will help make sure your contribution (pull request) will be accepted and easily merged.
+The [ArcGIS Viewer for Flex Thematic Widget](http://www.arcgis.com/home/item.html?id=ced1ad5fe30f4304adb056cdcbdc9ad0) is a sample widget that was originally built by Lloyd Heberlie at [Esri](http://www.esri.com) and has had many contributions from the Flex Team at [Esri](http://www.esri.com). We are excited that you are interested in improving the Thematic Widget source code. This guide will help make sure your contribution (pull request) will be accepted and easily merged.
 
 1. Make sure you have a [GitHub account](https://github.com/signup/free).
 2. [Fork](https://help.github.com/articles/fork-a-repo) the [Thematic Widget repo](../../) on GitHub.
