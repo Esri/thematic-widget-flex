@@ -24,7 +24,7 @@ The default item renderer for the Legend skin.
                 xmlns:s="library://ns.adobe.com/flex/spark"
                 xmlns:mx="library://ns.adobe.com/flex/mx"
                 name="LegendGroupItemRenderer"
-                width="150" height="35"
+                width="225" height="35"
                 autoDrawBackground="false"
                 focusEnabled="false"
                 mouseChildren="false">
