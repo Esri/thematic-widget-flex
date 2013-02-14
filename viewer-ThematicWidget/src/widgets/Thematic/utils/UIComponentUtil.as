@@ -77,11 +77,15 @@ public class UIComponentUtil
 
         var configXMLStringAC:ArrayCollection = null;
 
-        if (promptString == null)
+        if (promptString != null)
         {
             promptString = COMBOBOX_LABEL;
+            configXMLStringAC = new ArrayCollection([{ label: promptString, data: COMBOBOX_NO_DATA }]);
         }
-        configXMLStringAC = new ArrayCollection([{ label: promptString, data: COMBOBOX_NO_DATA }]);
+        else
+        {
+            configXMLStringAC = new ArrayCollection();
+        }
 
         configXML_LabelString = parseLabels;
         configXML_LabelStringArr = configXML_LabelString.split(_delimiter);
