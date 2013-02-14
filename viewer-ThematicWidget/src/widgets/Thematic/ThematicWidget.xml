@@ -19,20 +19,26 @@
 <configuration>
     <layers>
         <layer>
-            <name>Population 2007</name>
             <url>http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer</url>
             <classificationLayerName>states</classificationLayerName>
             <classificationLayerID>3</classificationLayerID>
             <!-- classification methods: Descs are labels -->
-            <classificationMethodTypeDescs>Equal Interval,Natural Breaks,Quantile</classificationMethodTypeDescs>
+            <classificationMethodTypeDescs>Natural Breaks,Quantile,Equal Interval</classificationMethodTypeDescs>
             <!-- esriClassifyEqualInterval,esriClassifyGeometricalInterval,esriClassifyNaturalBreaks,esriClassifyQuantile -->
-            <classificationMethodTypes>esriClassifyEqualInterval,esriClassifyNaturalBreaks,esriClassifyQuantile</classificationMethodTypes>
+            <classificationMethodTypes>esriClassifyNaturalBreaks,esriClassifyQuantile,esriClassifyEqualInterval</classificationMethodTypes>
             <!-- classification fields: Descs are labels -->
-            <classificationFieldTypeDescs>Pop 2007,Renter Occup.,Median Age</classificationFieldTypeDescs>
-            <classificationFieldTypes>POP07_SQMI,RENTER_OCC,MED_AGE</classificationFieldTypes>
+            <classificationFieldTypeDescs>Pop 2007/SqMi,Renter Occupancy,Median Age,Males,Females,Children,Retirees</classificationFieldTypeDescs>
+            <!-- classification fields: Types are fields -->
+            <classificationFieldTypes>POP07_SQMI,RENTER_OCC,MED_AGE,MALES,FEMALES,AGE_UNDER5,AGE_65_UP</classificationFieldTypes>
             <classificationBreaksMin>4</classificationBreaksMin>
             <classificationBreaksMax>12</classificationBreaksMax>
             <classificationBreaksDefault>6</classificationBreaksDefault>
+            <dynamicLabelingPlacement>esriServerPolygonPlacementAlwaysHorizontal</dynamicLabelingPlacement>
+            <!-- don't show labels when zoomed out beyond this scale -->
+            <dynamicLabelingMinScale>18489298</dynamicLabelingMinScale>
+            <dynamicLabelingFontColor>0x191919</dynamicLabelingFontColor>
+            <dynamicLabelingFontFamily>Verdana</dynamicLabelingFontFamily>
+            <dynamicLabelingFontWeight>bold</dynamicLabelingFontWeight>
             <useproxy>false</useproxy>
         </layer>
     </layers>
@@ -45,7 +51,7 @@
             <!-- Path to programmatically find the assets for Application Builder -->
             <base_url>widgets/Thematic/assets/images/</base_url>
             <!-- Title/label for mainState icon across the top widget panel -->
-            <main_icon>i_folder.png</main_icon>
+            <main_icon>i_thematic.png</main_icon>
             <main_label>Main Panel</main_label>
             <!-- Title/label for settingsState icon across the top widget panel -->
             <settings_icon>i_options.png</settings_icon>
@@ -53,20 +59,23 @@
         </icons>
         <transparency>
             <comp_label>Transparency</comp_label>
-            <defaulttransparency>0.8</defaulttransparency>
+            <defaulttransparency>0.9</defaulttransparency>
         </transparency>
         <color_ramp>
-            <fromColorLabel>Lower values</fromColorLabel>
-            <classificationFromColor>0xCECECE</classificationFromColor>
-            <toColorLabel>Higher values</toColorLabel>
-            <classificationToColor>0x0D538A</classificationToColor>
+            <classificationFromColorRampDisplay>Lower values</classificationFromColorRampDisplay>
+            <classificationFromColorRamp>0xCECECE</classificationFromColorRamp>
+            <classificationToColorRampDisplay>Higher values</classificationToColorRampDisplay>
+            <classificationToColorRamp>0x0D538A</classificationToColorRamp>
         </color_ramp>
         <classification>
-            <methodsLabelPrompt>Select a method</methodsLabelPrompt>
-            <methodsLabel>Method</methodsLabel>
-            <fieldsLabelPrompt>Select a field</fieldsLabelPrompt>
-            <fieldsLabel>Calculated by</fieldsLabel>
-            <breaksLabel>Segments</breaksLabel>
+            <methodsLabel>Classification</methodsLabel>
+            <fieldsLabel>based on</fieldsLabel>
+            <breaksLabel>Number of classes</breaksLabel>
         </classification>
+        <dynamicLabels>
+            <dynamicLabelsEnabledLabel>Labels</dynamicLabelsEnabledLabel>
+            <dynamicLabelsOnLabel>Hide / Remove</dynamicLabelsOnLabel>
+            <dynamicLabelsOffLabel>Show / Display</dynamicLabelsOffLabel>
+        </dynamicLabels>
     </ui>
 </configuration>
