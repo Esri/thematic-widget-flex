@@ -10,7 +10,7 @@ This repository includes:
 
 * The [widget source code](viewer-ThematicWidget/src/widgets/Thematic) to showcase how to dynamically generate symbology from an [ArcGIS service](http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer) and use that symbology with a dynamic map service.
 * A [non-widget sample](samples-Thematic/src) to showcase how to dynamically generate symbology from an [ArcGIS service](http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer) and use that symbology with a dynamic map service.
-* The [Change Log](CHANGELOG.md) containing details about the feature history.
+* The [Change Log](CHANGELOG.md) containing details about the repo history.
 * The [Documentation](../../wiki) for getting started using this repository.
 * The latest development is always on the [develop branch](../../tree/develop).
 * The latest release is always on the [master branch](../../tree/master).
@@ -24,11 +24,11 @@ Who is this code sample for?  You're looking for an example how to convert an AP
     * Interactively select different classification fields.
     * Modify the number of classes, color ramps, transparency, and labeling.
     * Apply all of these changes at run-time to a live dynamic ArcGIS service.
-* Want to see how you take an example of a [custom widget template](../../tree/3.0-CustomWidgetTemplate), apply an [ArcGIS API for Flex sample](samples-Thematic/src/GenerateRenderer.mxml), and package the [completed custom widget](../../tree/3.0-CustomWidgetComplete) for distribution with the [Application Builder](http://resources.arcgis.com/en/help/flex-viewer/concepts/index.html#//01m30000002v000000)?  Then you should keep reading.
-* This code sample provides one example of a [code template for a custom widget](../../tree/3.0-CustomWidgetTemplate), as well as a [finished custom widget](../../tree/3.0-CustomWidgetComplete) that has integrated the ["Generate Renderers" sample](samples-Thematic/src/GenerateRenderer.mxml) from the [ArcGIS API for Flex Resource Center](http://links.esri.com/flex).
+* Want to see how you take an example of a [custom widget template](../../tree/CustomWidgetTemplate-Begin), apply an [ArcGIS API for Flex sample](samples-Thematic/src/GenerateRenderer.mxml), and package the [completed custom widget](../../tree/CustomWidgetTemplate-End) for distribution with the [Application Builder](http://resources.arcgis.com/en/help/flex-viewer/concepts/index.html#//01m30000002v000000)?  Then you should keep reading.
+* This code sample provides one example of a [code template for a custom widget](../../tree/CustomWidgetTemplate-Begin), as well as a [finished custom widget](../../tree/CustomWidgetTemplate-End) that has integrated the ["Generate Renderers" sample](samples-Thematic/src/GenerateRenderer.mxml) from the [ArcGIS API for Flex Resource Center](http://links.esri.com/flex).
 
 ## Instructions
-What do you want to do with this widget?
+How are you going to integrate this widget in your own application?
 
 1.  If you are simply going to use the compiled "ready-to-use" version of the ThematicWidget packaged for the [ArcGIS Viewer for Flex Application Builder](http://resources.arcgis.com/en/help/flex-viewer/concepts/index.html#//01m30000002v000000 "Getting started with Application Builder") proceed to the [documentation for Application Builder](../../wiki/Application-Builder) section.
   
