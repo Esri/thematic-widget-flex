@@ -324,7 +324,7 @@
                 for (var i:int = 0; i < thematicLayerDetailsArray.length; i++)
                 {
                     layerDetails = thematicLayerDetailsArray[i];
-                    if (layerDetails.name.toLowerCase() == thematicLayerName && thematicDynamicLayerInfosArray)
+                    if (layerDetails.name.toLowerCase() == thematicLayerName.toLowerCase() && thematicDynamicLayerInfosArray)
                     {
                         thematicLayerMapSource = DynamicLayerInfo(thematicDynamicLayerInfosArray[i]).source as LayerMapSource;
                         generateRendererTask.source = thematicLayerMapSource;
