@@ -25,7 +25,7 @@ Who is this code sample for?  You're looking for an example how to convert an AP
     * Modify the number of classes, color ramps, transparency, and labeling.
     * Apply all of these changes at run-time to a live dynamic ArcGIS service.
 * Want to see how you take an example of a [custom widget template](../../tree/3.0-CustomWidgetTemplate), apply an [ArcGIS API for Flex sample](samples-Thematic/src/GenerateRenderer.mxml), and package the [completed custom widget](../../tree/3.0-CustomWidgetComplete) for distribution with the [Application Builder](http://resources.arcgis.com/en/help/flex-viewer/concepts/index.html#//01m30000002v000000)?  Then you should keep reading.
-* This code sample provides one example of a [code template for a custom widget](../../tree/3.0-CustomWidgetTemplate), as well as a [finished code sample](../../tree/3.0-CustomWidgetComplete) that has integrated the ["Generate Renderers" sample](samples-Thematic/src/GenerateRenderer.mxml) from the [ArcGIS API for Flex Resource Center](http://links.esri.com/flex).
+* This code sample provides one example of a [code template for a custom widget](../../tree/3.0-CustomWidgetTemplate), as well as a [finished custom widget](../../tree/3.0-CustomWidgetComplete) that has integrated the ["Generate Renderers" sample](samples-Thematic/src/GenerateRenderer.mxml) from the [ArcGIS API for Flex Resource Center](http://links.esri.com/flex).
 
 ## Instructions
 What do you want to do with this widget?
@@ -57,7 +57,7 @@ Ask questions on the [Thematic Widget Forum](http://forums.arcgis.com/threads/76
 Find a bug or want to request a new feature?  Please let us know by [submitting an issue](../../issues "Submit an Issue").
 
 ## Contributing
-Anyone and everyone is welcome to contribute.
+Anyone and everyone is welcome to [contribute](CONTRIBUTING.md).
 
 ## Licensing
 Copyright 2013 Esri
