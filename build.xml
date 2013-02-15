@@ -29,11 +29,15 @@
     <property file="${basedir}/build.properties"/>
 
     <target name="main"
-            depends="pre-build,release-widget"
+            depends="pre-build,clean-build-widget,release-widget"
             description="Full build"/>
+            
+    <target name="clean"
+            depends="clean-widget"
+            description="Restores project to initial state before build (widget)"/>
 
     <target name="pre-build"
-            depends="check-java-home,check-ant-home,check-flex-home,check-ags-api-home,check-ags-viewer-home"
+            depends="check-os,check-java-home,check-ant-home,check-flex-home,check-ags-api-home,check-ags-viewer-home,set-project-properties"
             description="Check for the required environment variables for compilation."/>
 
     <target name="clean-build-widget"
@@ -44,9 +48,12 @@
             depends="build-widget,post-process-widget"
             description="Creates binary widget and assembles the widget for Application Builder."/>
 
-    <target name="check-environment">
-        <echo>Checking for the required environment variables for compilation.</echo>
+    <target name="check-os"
+            description="Reports the current Operating System and version."
+            unless="CHECK_OS.set">
+        <echo>Operating System Details.</echo>
         <echo>OS: ${os.name} / ${os.version} / ${os.arch}</echo>
+        <property name="CHECK_OS.set" value="true"/> 
     </target>
 
     <target name="check-java-home"
@@ -120,14 +127,18 @@
     <target name="set-project-properties"
             description="Sets properties used in compiling and distributing the widget project."
             unless="PROJECT_PROPERTIES.set">
-        <property name="project.widget.output" location="${basedir}/${project.widget.release}"/>
-        <property name="project.widget.temp-output" location="${basedir}/dist-widget"/>
         <property name="project.widget.deps" location="${basedir}/build-widget-deps"/>
+        <property name="project.widget.temp-output" location="${basedir}/dist-widget"/>
+        <property name="project.widget.output" location="${basedir}/${project.widget.release}"/>
         <property name="PROJECT_PROPERTIES.set" value="true"/>
+        
+        <echo message="Widget dependencies directory: ${project.widget.deps}"/>
+        <echo message="Widget distribution directory: ${project.widget.temp-output}"/>
+        <echo message="Widget release directory: ${project.widget.output}"/>
     </target>
 
     <target name="clean-widget"
-            depends="set-project-properties"
+            depends="pre-build"
             description="Deletes the contents of the widget distribution directory and widget dependencies directory.">
         <delete dir="${project.widget.temp-output}"/>
         <delete dir="${project.widget.output}"/>
@@ -135,7 +146,7 @@
     </target>
 
     <target name="create-widget-directories"
-            depends="set-project-properties"
+            depends="pre-build"
             description="Creates the widget distribution directory and widget dependencies directory for the viewer and application builder distribution.">
         <mkdir dir="${project.widget.temp-output}"/>
         <mkdir dir="${project.widget.output}"/>

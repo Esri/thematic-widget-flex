@@ -18,36 +18,13 @@
 -->
 <viewer:BaseWidget xmlns:fx="http://ns.adobe.com/mxml/2009"
                    xmlns:s="library://ns.adobe.com/flex/spark"
+                   xmlns:mx="library://ns.adobe.com/flex/mx"
                    xmlns:viewer="com.esri.viewer.*"
+                   xmlns:esri="http://www.esri.com/2008/ags"
                    x="600" y="300"
                    currentState="mainState"
                    widgetConfigLoaded="widgetConfigLoadedHandler()">
-    <!--
-    Description:
-    This file provides an example of what your starting codebase might
-    be for creating a custom widget.  This file contains all the code for creating
-    a widget with two user interfaces, a main panel and a settings panel.
-    These interfaces are represented by the mxml Group components with
-    ids named 'mainState' and 'settingsState'.
 
-    Most widgets will implement both BaseWidget and WidgetTemplate.  One key
-    aspect of BaseWidget is the event named widgetConfigLoaded, in this
-    example when the event is fired a function named widgetConfigLoadedHandler is called.
-    This is where you can do your preprocessing before the widget is presented to
-    the user interface.  It is at this point where we can parse the widget's
-    configuration file (configXML is the variable), as well as look into the
-    viewer's main configuration file (configData is the variable).
-
-    The WidgetTemplate's events 'closed', 'minimized', and 'open' are also very
-    important.  The functions called by these events are where you can
-    respond to the widget being closed, minimized, or opened from the user
-    interface.
-
-    Documentation:
-    See the resource center for more information.
-    http://resources.arcgis.com/en/help/flex-viewer/concepts/index.html#/Creating_widgets/01m300000010000000/
-    http://resources.arcgis.com/en/help/flex-viewer/concepts/index.html#/Widget_life_cycle/01m300000024000000/
-    -->
     <viewer:states>
         <s:State name="mainState"/>
         <s:State name="settingsState"/>
@@ -58,25 +35,91 @@
             <s:Fade targets="{[settingsState,mainState]}"/>
         </s:Transition>
     </viewer:transitions>
+
     <fx:Script>
         <![CDATA[
-            //-------------------------------
-            //	BEGIN: STEP 1 - ADD VARIABLES
-            //-------------------------------
+            import com.esri.ags.events.DetailsEvent;
+            import com.esri.ags.events.GenerateRendererEvent;
+            import com.esri.ags.events.LayerEvent;
+            import com.esri.ags.layers.ArcGISDynamicMapServiceLayer;
+            import com.esri.ags.layers.supportClasses.AllDetails;
+            import com.esri.ags.layers.supportClasses.DynamicLayerInfo;
+            import com.esri.ags.layers.supportClasses.LayerDetails;
+            import com.esri.ags.layers.supportClasses.LayerDrawingOptions;
+            import com.esri.ags.layers.supportClasses.LayerMapSource;
+            import com.esri.ags.renderers.ClassBreaksRenderer;
+            import com.esri.ags.tasks.supportClasses.ClassBreaksDefinition;
+            import com.esri.ags.tasks.supportClasses.GenerateRendererParameters;
+
+            import mx.collections.ArrayCollection;
+            import mx.collections.ArrayList;
+            import mx.controls.Alert;
+            import mx.events.ColorPickerEvent;
+            import mx.rpc.events.FaultEvent;
+
+            import spark.events.IndexChangeEvent;
+
+            import widgets.Thematic.skins.GRLegendSkin;
+            import widgets.Thematic.utils.UIComponentUtil;
+
+            //widget panels
             private var ICON_URL:String;
             [Bindable]
-            private var wWidth:Number = 400;
+            private var widgetWidth:Number = 400;
             [Bindable]
-            private var wHeight:Number = 240;
-
+            private var widgetHeight:Number = 240;
             [Bindable]
-            private var mainIcon:String;
+            private var mainPanelIcon:String;
             [Bindable]
-            private var mainLabel:String;
+            private var mainPanelLabel:String;
             [Bindable]
-            private var settingsIcon:String;
+            private var settingsPanelIcon:String;
             [Bindable]
-            private var settingsLabel:String;
+            private var settingsPanelLabel:String;
+            //thematic layer
+            [Bindable]
+            private var thematicLayer:ArcGISDynamicMapServiceLayer;
+            private var thematicLayerName:String;
+            private var thematicDynamicLayerInfosArray:Array;
+            private var thematicLayerMapSource:LayerMapSource;
+            private var thematicLayerDetailsArray:Array = [];
+            private var thematicLayerDrawingOptions:LayerDrawingOptions;
+            //classification
+            private var classificationRendererParameters:GenerateRendererParameters = new GenerateRendererParameters();
+            private var classificationBreaksDefinition:ClassBreaksDefinition = new ClassBreaksDefinition();
+            [Bindable]
+            private var classificationMethodsLabelDisplay:String;
+            [Bindable]
+            private var classificationFieldsLabelDisplay:String;
+            [Bindable]
+            private var classificationNumberOfBreaksLabel:String;
+            private var classificationBreakCount:Number = 6;
+            private var classificationMethod:String;
+            private var classificationField:String;
+            [Bindable]
+            private var classificationFieldAlias:String; //used in dynamic labels and layer name
+            //color ramps
+            [Bindable]
+            private var classificationToColorRampDisplay:String;
+            [Bindable]
+            private var classificationFromColorRampDisplay:String;
+            [Bindable]
+            private var classificationColorRampFromSelectedColor:uint;
+            [Bindable]
+            private var classificationColorRampToSelectedColor:uint;
+            //transparency
+            [Bindable]
+            private var transparencyLabelDisplay:String;
+            [Bindable]
+            private var thematicLayerAlpha:Number;
+            //dynamic labeling
+            [Bindable]
+            private var dynamicLabelsEnabledLabel:String;
+            [Bindable]
+            private var dynamicLabelsOnLabel:String;
+            [Bindable]
+            private var dynamicLabelsOffLabel:String;
+            private var dynamicLabelsMinScale:Number;
 
             private var useproxy:Boolean;
             private var proxyurl:String;
@@ -97,34 +140,108 @@
                     //configure widget width and height
                     var mWidth:String = configXML.ui.widget_dimensions.width || "300";
                     var mHeight:String = configXML.ui.widget_dimensions.height || "300";
-                    wWidth = Number(mWidth);
-                    wHeight = Number(mHeight);
-                    wTemplate.width = wWidth;
-                    wTemplate.height = wHeight;
-
+                    widgetWidth = Number(mWidth);
+                    widgetHeight = Number(mHeight);
+                    widgetTemplate.width = widgetWidth;
+                    widgetTemplate.height = widgetHeight;
                     //configure UI: assets, icons, etc.
                     ICON_URL = configXML.ui.icons.base_url || "assets/images";
-                    mainIcon = configXML.ui.icons.main_icon || "i_widget.png";
-                    mainLabel = configXML.ui.icons.main_label || "Main Panel";
-                    settingsIcon = configXML.ui.icons.settings_icon || "i_options.png";
-                    settingsLabel = configXML.ui.icons.settings_label || "Settings Panel";
-                    wTemplate.addTitlebarButton(ICON_URL + mainIcon, mainLabel, showStateMainUI);
-                    wTemplate.addTitlebarButton(ICON_URL + settingsIcon, settingsLabel, showStateSettingsUI);
-
-                    //ask the widget configuration if it wants to use a proxy
-                    useproxy = configXML.layers.layer.useproxy == "true";
-                    if (useproxy)
+                    mainPanelIcon = configXML.ui.icons.main_icon || "i_widget.png";
+                    mainPanelLabel = configXML.ui.icons.main_label || "Main Panel";
+                    settingsPanelIcon = configXML.ui.icons.settings_icon || "i_options.png";
+                    settingsPanelLabel = configXML.ui.icons.settings_label || "Settings Panel";
+                    //classification labels
+                    classificationMethodsLabelDisplay = configXML.ui.classification.methodsLabel || "Class Methods";
+                    classificationFieldsLabelDisplay = configXML.ui.classification.fieldsLabel || "Class Fields";
+                    classificationNumberOfBreaksLabel = configXML.ui.classification.breaksLabel || "Class Breaks";
+                    //classification methods
+                    var classificationMethodsLabelConfig:String = configXML.layers.layer.classificationMethodTypeDescs;
+                    var classificationMethodsDataConfig:String = configXML.layers.layer.classificationMethodTypes;
+                    var classificationMethodsAC:ArrayCollection = UIComponentUtil.getComboBoxDataProvider(classificationMethodsLabelConfig, classificationMethodsDataConfig);
+                    if (classificationMethodsAC.length > 0)
                     {
-                        //configure proxy url from main configuration file
-                        proxyurl = configData.proxyUrl;
+                        var classificationMethodItem:Object = classificationMethodsAC.getItemAt(0);
+                        classificationMethod = classificationMethodItem.data;
+                        classificationMethodsDDL.dataProvider = classificationMethodsAC;
                     }
+                    else
+                    {
+                        classificationMethod = ClassBreaksDefinition.CLASSIFY_EQUAL_INTERVAL;
+                    }
+                    //classification fields
+                    var classificationFieldsLabelConfig:String = configXML.layers.layer.classificationFieldTypeDescs;
+                    var classificationFieldsDataConfig:String = configXML.layers.layer.classificationFieldTypes;
+                    var classificationFieldsAC:ArrayCollection = UIComponentUtil.getComboBoxDataProvider(classificationFieldsLabelConfig, classificationFieldsDataConfig);
+                    if (classificationFieldsAC.length > 0)
+                    {
+                        var defaultClassificationItem:Object = classificationFieldsAC.getItemAt(0);
+                        classificationField = defaultClassificationItem.data;
+                        classificationFieldAlias = defaultClassificationItem.label;
+                        classificationFieldsDDL.dataProvider = classificationFieldsAC;
+                    }
+                    else
+                    {
+                        classificationField = "POP07_SQMI";
+                        classificationFieldAlias = "Pop 2007";
+                    }
+                    //classification breaks
+                    var classificationMinimumNumberOfBreaks:Number = Number(configXML.layers.layer.classificationBreaksMin) || 5;
+                    var classificationMaximumNumberOfBreaks:Number = Number(configXML.layers.layer.classificationBreaksMax) || 11;
+                    var classificationDefaultNumberOfBreaks:Number = Number(configXML.layers.layer.classificationBreaksDefault) || 6;
+                    classificationNumberOfClassBreaksNS.minimum = classificationMinimumNumberOfBreaks;
+                    classificationNumberOfClassBreaksNS.maximum = classificationMaximumNumberOfBreaks;
+                    classificationNumberOfClassBreaksNS.value = classificationDefaultNumberOfBreaks;
+                    //color ramps
+                    classificationFromColorRampDisplay = configXML.ui.color_ramp.classificationFromColorRampDisplay || "From Color:";
+                    classificationToColorRampDisplay = configXML.ui.color_ramp.classificationToColorRampDisplay || "To Color:";
+                    classificationColorRampFromSelectedColor = uint(configXML.ui.color_ramp.classificationFromColorRamp) || uint(getStyle('chromeColor'));
+                    classificationColorRampToSelectedColor = uint(configXML.ui.color_ramp.classificationToColorRamp) || uint(getStyle('focusColor'));
+                    //transparency
+                    thematicLayerAlpha = Number(configXML.ui.transparency.defaulttransparency) || 1.0;
+                    transparencyLabelDisplay = configXML.ui.transparency.comp_label || "Transparency:";
+                    //dynamic labels
+                    dynamicLabelsEnabledLabel = configXML.ui.dynamicLabels.dynamicLabelsEnabledLabel || "Label";
+                    dynamicLabelsOnLabel = configXML.ui.dynamicLabels.dynamicLabelsOnLabel || "On";
+                    dynamicLabelsOffLabel = configXML.ui.dynamicLabels.dynamicLabelsOffLabel || "Off";
+                    dynamicLabelsMinScale = Number(configXML.layers.layer.dynamicLabelingMinScale) || 18489297;
+                    //label class and label options
+                    thematicLabelClass.labelPlacement = configXML.layers.layer.dynamicLabelingPlacement;
+                    thematicLabelOptions.color = uint(configXML.layers.layer.dynamicLabelingFontColor) || 0x333333;
+                    thematicLabelOptions.fontFamily = configXML.layers.layer.dynamicLabelingFontFamily || "Verdana";
+                    thematicLabelOptions.fontWeight = configXML.layers.layer.dynamicLabelingFontWeight || "bold";
+                    //add icons to widget
+                    widgetTemplate.addTitlebarButton(ICON_URL + mainPanelIcon, mainPanelLabel, showStateMainUI);
+                    widgetTemplate.addTitlebarButton(ICON_URL + settingsPanelIcon, settingsPanelLabel, showStateSettingsUI);
+
                     //after the map has loaded sucessfully interact with the map reference
                     if (map.loaded)
                     {
+                        //ask the widget configuration if it wants to use a proxy
+                        useproxy = configXML.layers.layer.useproxy == "true";
+                        if (useproxy)
+                        {
+                            //configure proxy url from main configuration file
+                            proxyurl = configData.proxyUrl;
+                        }
                         //perform any logic related to the map
-                        //------------------------------------------------------
-                        //	BEGIN: STEP 5 - GET CONFIGURATION FROM WIDGET CONFIG
-                        //------------------------------------------------------
+                        thematicLayer = new ArcGISDynamicMapServiceLayer();
+
+                        thematicLayer.addEventListener(LayerEvent.LOAD, thematicLayer_loadHandler, false, 0, true);
+                        thematicLayer.url = configXML.layers.layer.url || "http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer";
+                        thematicLayer.proxyURL = proxyurl;
+
+                        detailsTask.url = configXML.layers.layer.url || "http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer";
+                        detailsTask.proxyURL = proxyurl;
+
+                        generateRendererTask.url = configXML.layers.layer.url + "/" + configXML.layers.layer.classificationLayerID;
+                        generateRendererTask.proxyURL = proxyurl;
+
+                        thematicLayerName = configXML.layers.layer.classificationLayerName || "states";
+
+                        var visibleLayer:Number = Number(configXML.layers.layer.classificationLayerID) || 3;
+                        thematicLayer.visibleLayers = new ArrayList([ visibleLayer ]);
+
+                        map.addLayer(thematicLayer);
                     }
                 }
             }
@@ -140,9 +257,10 @@
              */
             private function widgetClosedHandler(event:Event):void
             {
-                //---------------------------------------------------------------
-                //	BEGIN: STEP 6 - HIDE DEMOGRAPHICS LAYER WHEN WIDGET IS CLOSED
-                //---------------------------------------------------------------
+                if (thematicLayer)
+                {
+                    thematicLayer.visible = false;
+                }
             }
 
             /**
@@ -155,16 +273,17 @@
              */
             private function widgetOpenedHandler(event:Event):void
             {
-                //---------------------------------------------------------------
-                //	BEGIN: STEP 7 - SHOW DEMOGRAPHICS LAYER WHEN WIDGET IS OPENED
-                //---------------------------------------------------------------
+                if (thematicLayer)
+                {
+                    thematicLayer.visible = true;
+                }
             }
 
             /**
              * Called when the widget is minimized.  Use this event to
              * process any logic when the widget is minimized.
              */
-            protected function widgetMinimizedHandler(event:Event):void
+            private function widgetMinimizedHandler(event:Event):void
             {
             }
 
@@ -186,23 +305,138 @@
             {
                 this.currentState = "settingsState";
             }
-            //------------------------------------
-            //	BEGIN: STEP 8 - ADD BUSINESS LOGIC
-            //------------------------------------
+
+            //---------------------------------------------
+            //	Functions for layer load and initialization
+            //---------------------------------------------
+            protected function thematicLayer_loadHandler(event:LayerEvent):void
+            {
+                thematicDynamicLayerInfosArray = thematicLayer.createDynamicLayerInfosFromLayerInfos();
+                detailsTask.getAllDetails();
+            }
+
+            protected function detailsTask_getAllDetailsCompleteHandler(event:DetailsEvent):void
+            {
+                var details:AllDetails = event.allDetails;
+                thematicLayerDetailsArray = details.layersDetails;
+                var layerDetails:LayerDetails;
+
+                for (var i:int = 0; i < thematicLayerDetailsArray.length; i++)
+                {
+                    layerDetails = thematicLayerDetailsArray[i];
+                    if (layerDetails.name.toLowerCase() == thematicLayerName && thematicDynamicLayerInfosArray)
+                    {
+                        thematicLayerMapSource = DynamicLayerInfo(thematicDynamicLayerInfosArray[i]).source as LayerMapSource;
+                        generateRendererTask.source = thematicLayerMapSource;
+                        generateRenderer();
+                        break;
+                    }
+                }
+            }
+
+            protected function esriService_faultHandler(event:FaultEvent):void
+            {
+                Alert.show("Error: " + event.fault.faultString, "Error code: " + event.fault.faultCode);
+            }
+
+            //---------------------------------------------
+            //	Functions for creating thematic renderer
+            //---------------------------------------------
+            protected function generateRenderer():void
+            {
+                classificationBreaksDefinition.breakCount = classificationBreakCount;
+                classificationBreaksDefinition.classificationField = classificationField;
+                classificationBreaksDefinition.classificationMethod = classificationMethod;
+                colorRamp.fromColor = classificationColorRampFromSelectedColor;
+                colorRamp.toColor = classificationColorRampToSelectedColor;
+                classificationBreaksDefinition.colorRamp = colorRamp;
+                classificationRendererParameters.classificationDefinition = classificationBreaksDefinition;
+                //call the server to generate the renderer
+                generateRendererTask.execute(classificationRendererParameters);
+            }
+
+            protected function generateRendererTask_executeCompleteHandler(event:GenerateRendererEvent):void
+            {
+                var renderer:ClassBreaksRenderer = event.renderer as ClassBreaksRenderer;
+                thematicLayerDrawingOptions = new LayerDrawingOptions();
+                thematicLayerDrawingOptions.layerId = thematicLayerMapSource.mapLayerId; //states layer id in the service
+                thematicLayerDrawingOptions.renderer = renderer;
+
+                if (showDynamicLabelsToggleButton.selected)
+                {
+                    thematicLayerDrawingOptions.showLabels = true;
+                    //set the labelExpression field name (e.g. [POP07_SQMI])
+                    thematicLabelClass.labelExpression = '"' + classificationFieldAlias + '" CONCAT NEWLINE CONCAT [' + classificationField + ']';
+                    thematicLabelClass.minScale = dynamicLabelsMinScale;
+                    thematicLayerDrawingOptions.labelClasses = [ thematicLabelClass ];
+                }
+                else
+                {
+                    thematicLayerDrawingOptions.showLabels = false;
+                }
+                thematicLayer.alpha = thematicLayerAlpha;
+                thematicLayer.name = classificationFieldAlias;
+                var layerDrawingOptionsArr:Array = [ thematicLayerDrawingOptions ];
+                thematicLayer.layerDrawingOptions = layerDrawingOptionsArr;
+                legend.layers = [ thematicLayer ];
+            }
+
+            //------------------------------------------------
+            //	Functions for classification and layer changes
+            //------------------------------------------------
+            protected function classificationMethodsDDL_changeHandler(event:IndexChangeEvent):void
+            {
+                classificationMethod = DropDownList(event.currentTarget).selectedItem.data;
+                generateRenderer();
+            }
+
+            protected function classificationFieldsDDL_changeHandler(event:IndexChangeEvent):void
+            {
+                classificationField = DropDownList(event.currentTarget).selectedItem.data;
+                classificationFieldAlias = DropDownList(event.currentTarget).selectedItem.label;
+                generateRenderer();
+            }
+
+            protected function classificationNumberOfClassBreaksNS_changeHandler(event:Event):void
+            {
+                classificationBreakCount = NumericStepper(event.currentTarget).value;
+                generateRenderer();
+            }
+
+            protected function colorRamp_changeHandler(event:ColorPickerEvent):void
+            {
+                event.currentTarget.id == "classificationFromColorRampPicker" ? classificationColorRampFromSelectedColor = event.color : classificationColorRampToSelectedColor = event.color;
+                generateRenderer();
+            }
+
+            protected function transparencyChangeHandler(event:Event):void
+            {
+                thematicLayerAlpha = sliderTransparency.value;
+                thematicLayer.alpha = thematicLayerAlpha;
+            }
         ]]>
     </fx:Script>
-    <fx:Declarations>
-        <!--
-        //	BEGIN: STEP 2 - ADD ANY VARIABLE DECLARATIONS THROUGH MARKUP INSTEAD OF ACTIONSCRIPT
-        //-->
 
+    <fx:Declarations>
+        <esri:DetailsTask id="detailsTask"
+                          fault="esriService_faultHandler(event)"
+                          getAllDetailsComplete="detailsTask_getAllDetailsCompleteHandler(event)"/>
+        <esri:GenerateRendererTask id="generateRendererTask"
+                                   executeComplete="generateRendererTask_executeCompleteHandler(event)"
+                                   fault="esriService_faultHandler(event)"/>
+        <esri:AlgorithmicColorRamp id="colorRamp" algorithm="esriHSVAlgorithm"/>
+        <esri:LabelClass id="thematicLabelClass">
+            <esri:LabelOptions id="thematicLabelOptions"/>
+        </esri:LabelClass>
     </fx:Declarations>
-    <viewer:WidgetTemplate id="wTemplate"
+
+    <viewer:WidgetTemplate id="widgetTemplate"
                            closed="widgetClosedHandler(event)"
                            minimized="widgetMinimizedHandler(event)"
                            open="widgetOpenedHandler(event)"
-                           widgetHeight="{wHeight}"
-                           widgetWidth="{wWidth}">
+                           widgetHeight="{widgetHeight}"
+                           widgetWidth="{widgetWidth}">
+        <!-- legend panel -->
         <s:Group id="mainState"
                  width="100%" height="100%"
                  visible="false"
@@ -212,32 +446,105 @@
                                   horizontalAlign="center"
                                   paddingLeft="5"/>
             </s:layout>
-            <!--
-            //	BEGIN STEP 3:  REPLACE Rect component WITH WIDGET MAIN UI
-            //-->
-            <s:Rect width="100%" height="100%">
-                <s:fill>
-                    <s:SolidColor color="{getStyle('focusColor')}"/>
-                </s:fill>
-            </s:Rect>
+            <s:Scroller width="100%" height="100%">
+                <s:VGroup>
+                    <esri:Legend id="legend"
+                                 left="5" right="5" top="5" bottom="5"
+                                 layers="{[thematicLayer]}"
+                                 map="{map}"
+                                 skinClass="widgets.Thematic.skins.GRLegendSkin"/>
+                </s:VGroup>
+            </s:Scroller>
         </s:Group>
+        <!-- configuration settings panel -->
         <s:Group id="settingsState"
                  width="100%" height="100%"
                  visible="false"
                  visible.settingsState="true">
             <s:layout>
-                <s:VerticalLayout gap="6"
+                <s:VerticalLayout gap="5"
                                   horizontalAlign="left"
                                   paddingLeft="5"/>
             </s:layout>
-            <!--
-            //	BEGIN STEP 4:  REPLACE Rect component WITH WIDGET SETTINGS UI
-            //-->
-            <s:Rect width="100%" height="100%">
-                <s:fill>
-                    <s:SolidColor color="0xFF0000"/>
-                </s:fill>
-            </s:Rect>
+            <!-- classification methods user interface -->
+            <s:HGroup width="100%"
+                      gap="5"
+                      horizontalAlign="left"
+                      verticalAlign="middle">
+                <s:Label width="100" text="{classificationMethodsLabelDisplay}"/>
+                <s:DropDownList id="classificationMethodsDDL"
+                                width="100%"
+                                change="classificationMethodsDDL_changeHandler(event)"
+                                requireSelection="true"/>
+            </s:HGroup>
+            <!-- classification field user interface -->
+            <s:HGroup width="100%"
+                      gap="5"
+                      horizontalAlign="left"
+                      verticalAlign="middle">
+                <s:Label width="100" text="{classificationFieldsLabelDisplay}"/>
+                <s:DropDownList id="classificationFieldsDDL"
+                                width="100%"
+                                change="classificationFieldsDDL_changeHandler(event)"
+                                requireSelection="true"/>
+            </s:HGroup>
+            <!-- classification number of breaks user interface -->
+            <s:HGroup width="100%"
+                      gap="5"
+                      horizontalAlign="left"
+                      verticalAlign="middle">
+                <s:Label width="100" text="{classificationNumberOfBreaksLabel}"/>
+                <s:NumericStepper id="classificationNumberOfClassBreaksNS" change="classificationNumberOfClassBreaksNS_changeHandler(event)"/>
+            </s:HGroup>
+            <!-- color ramp: to color user interface -->
+            <s:HGroup width="100%"
+                      gap="5"
+                      horizontalAlign="left"
+                      verticalAlign="middle">
+                <s:Label width="100" text="{classificationToColorRampDisplay}"/>
+                <mx:ColorPicker id="classificationToColorRampPicker"
+                                width="53"
+                                change="colorRamp_changeHandler(event)"
+                                selectedColor="{classificationColorRampToSelectedColor}"/>
+            </s:HGroup>
+            <!-- color ramp: from color user interface -->
+            <s:HGroup width="100%"
+                      gap="5"
+                      horizontalAlign="left"
+                      verticalAlign="middle">
+                <s:Label width="100" text="{classificationFromColorRampDisplay}"/>
+                <mx:ColorPicker id="classificationFromColorRampPicker"
+                                width="53"
+                                change="colorRamp_changeHandler(event)"
+                                selectedColor="{classificationColorRampFromSelectedColor}"/>
+            </s:HGroup>
+            <!-- transparency user interface -->
+            <s:HGroup width="100%"
+                      gap="5"
+                      horizontalAlign="left"
+                      verticalAlign="middle">
+                <s:Label width="100" text="{transparencyLabelDisplay}"/>
+                <s:HSlider id="sliderTransparency"
+                           width="100%"
+                           change="transparencyChangeHandler(event)"
+                           liveDragging="true"
+                           maximum="1"
+                           minimum="0"
+                           showDataTip="true"
+                           stepSize="0.1"
+                           value="{thematicLayerAlpha}"/>
+            </s:HGroup>
+            <!-- dynamic labels user interface  -->
+            <s:HGroup width="100%"
+                      gap="5"
+                      horizontalAlign="left"
+                      verticalAlign="middle">
+                <s:Label width="100" text="{dynamicLabelsEnabledLabel}"/>
+                <s:ToggleButton id="showDynamicLabelsToggleButton"
+                                click="generateRenderer()"
+                                label="{showDynamicLabelsToggleButton.selected ? dynamicLabelsOnLabel : dynamicLabelsOffLabel}"
+                                selected="false"/>
+            </s:HGroup>
         </s:Group>
     </viewer:WidgetTemplate>
 </viewer:BaseWidget>
