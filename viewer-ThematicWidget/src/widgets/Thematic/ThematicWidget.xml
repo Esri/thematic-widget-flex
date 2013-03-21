@@ -51,7 +51,7 @@
             <!-- Path to programmatically find the assets for Application Builder -->
             <base_url>widgets/Thematic/assets/images/</base_url>
             <!-- Title/label for mainState icon across the top widget panel -->
-            <main_icon>i_thematic.png</main_icon>
+            <main_icon>i_thematic_icon.png</main_icon>
             <main_label>Main Panel</main_label>
             <!-- Title/label for settingsState icon across the top widget panel -->
             <settings_icon>i_options.png</settings_icon>
