@@ -1,3 +1,11 @@
+## Version 3.2
+
+* Released March 22, 2013
+* Updated build.properties to require ArcGIS API 3.2 for Flex.
+* Updated meta.xml, widget version and description to reflect version 3.2.
+* Updated icon in meta.xml to resolve asset name conflict with viewer.
+* Renamed widget asset from i_thematic.png to i_thematic_icon.png.
+
 ## Version 3.1
 
 * Released February 13, 2013
