@@ -20,7 +20,7 @@
     <openbydefault>true</openbydefault>
     <icon>assets/images/i_thematic_icon.png</icon>
     <label>Thematic</label>
-    <description>ArcGIS Viewer for Thematic widget v3.2.0</description>
+    <description>ArcGIS Viewer for Thematic widget v3.3.0</description>
     <helpurl>http://www.arcgis.com/home/item.html?id=ced1ad5fe30f4304adb056cdcbdc9ad0</helpurl>
-    <widgetversion>3.2.0</widgetversion>
+    <widgetversion>3.3.0</widgetversion>
 </configuration>
