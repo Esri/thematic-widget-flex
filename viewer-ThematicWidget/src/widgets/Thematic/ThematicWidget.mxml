@@ -328,16 +328,29 @@
                 thematicLayerDetailsArray = details.layersDetails;
                 var layerDetails:LayerDetails;
 
+                var layerFound:Boolean = false;
+                var layersInService:String = "ID:Name\n";
+
                 for (var i:int = 0; i < thematicLayerDetailsArray.length; i++)
                 {
                     layerDetails = thematicLayerDetailsArray[i];
+                    layersInService += layerDetails.id + ":" + layerDetails.name + "\n";
                     if (layerDetails.name.toLowerCase() == thematicLayerName.toLowerCase() && thematicDynamicLayerInfosArray)
                     {
                         thematicLayerMapSource = DynamicLayerInfo(thematicDynamicLayerInfosArray[i]).source as LayerMapSource;
                         generateRendererTask.source = thematicLayerMapSource;
-                        generateRenderer();
+                        layerFound = true;
                         break;
                     }
+                }
+
+                if (!layerFound)
+                {
+                    Alert.show("Unable to find " + thematicLayerName + " in the configured service layers.\n" + layersInService, "ThematicWidget requirement missing");
+                }
+                else
+                {
+                    generateRenderer();
                 }
             }
 
