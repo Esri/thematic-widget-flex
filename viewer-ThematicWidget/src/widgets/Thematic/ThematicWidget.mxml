@@ -312,7 +312,14 @@
             protected function thematicLayer_loadHandler(event:LayerEvent):void
             {
                 thematicDynamicLayerInfosArray = thematicLayer.createDynamicLayerInfosFromLayerInfos();
-                detailsTask.getAllDetails();
+                if (thematicLayer.supportsDynamicLayers)
+                {
+                    detailsTask.getAllDetails();
+                }
+                else
+                {
+                    Alert.show("Service does not support dynamic layers, please enable dynamic layers on the service.", "ThematicWidget requirement missing");
+                }
             }
 
             protected function detailsTask_getAllDetailsCompleteHandler(event:DetailsEvent):void
