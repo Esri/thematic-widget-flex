@@ -225,10 +225,11 @@
                         }
                         //perform any logic related to the map
                         thematicLayer = new ArcGISDynamicMapServiceLayer();
-
-                        thematicLayer.addEventListener(LayerEvent.LOAD, thematicLayer_loadHandler, false, 0, true);
+                        thematicLayerName = configXML.layers.layer.classificationLayerName || "states";
+                        thematicLayer.name = configXML.layers.layer.name || "Thematic layer";
                         thematicLayer.url = configXML.layers.layer.url || "http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer";
                         thematicLayer.proxyURL = proxyurl;
+                        thematicLayer.addEventListener(LayerEvent.LOAD, thematicLayer_loadHandler, false, 0, true);
 
                         detailsTask.url = configXML.layers.layer.url || "http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer";
                         detailsTask.proxyURL = proxyurl;
@@ -236,7 +237,6 @@
                         generateRendererTask.url = configXML.layers.layer.url + "/" + configXML.layers.layer.classificationLayerID;
                         generateRendererTask.proxyURL = proxyurl;
 
-                        thematicLayerName = configXML.layers.layer.classificationLayerName || "states";
 
                         var visibleLayer:Number = Number(configXML.layers.layer.classificationLayerID) || 3;
                         thematicLayer.visibleLayers = new ArrayList([ visibleLayer ]);
