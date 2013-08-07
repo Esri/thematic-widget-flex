@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+///////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2008-2013 Esri. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+///////////////////////////////////////////////////////////////////////////
+-->
+<configuration>
+    <layers>
+        <layer>
+            <url>http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer</url>
+            <name>Thematic</name>
+            <classificationLayerName>states</classificationLayerName>
+            <classificationLayerID>3</classificationLayerID>
+            <!-- classification methods: Descs are labels -->
+            <classificationMethodTypeDescs>Natural Breaks,Quantile,Equal Interval</classificationMethodTypeDescs>
+            <!-- esriClassifyEqualInterval,esriClassifyGeometricalInterval,esriClassifyNaturalBreaks,esriClassifyQuantile -->
+            <classificationMethodTypes>esriClassifyNaturalBreaks,esriClassifyQuantile,esriClassifyEqualInterval</classificationMethodTypes>
+            <!-- classification fields: Descs are labels -->
+            <classificationFieldTypeDescs>Pop 2007/SqMi,Renter Occupancy,Median Age,Males,Females,Children,Retirees</classificationFieldTypeDescs>
+            <!-- classification fields: Types are fields -->
+            <classificationFieldTypes>POP07_SQMI,RENTER_OCC,MED_AGE,MALES,FEMALES,AGE_UNDER5,AGE_65_UP</classificationFieldTypes>
+            <classificationBreaksMin>4</classificationBreaksMin>
+            <classificationBreaksMax>12</classificationBreaksMax>
+            <classificationBreaksDefault>6</classificationBreaksDefault>
+            <dynamicLabelingPlacement>esriServerPolygonPlacementAlwaysHorizontal</dynamicLabelingPlacement>
+            <!-- don't show labels when zoomed out beyond this scale -->
+            <dynamicLabelingMinScale>18489298</dynamicLabelingMinScale>
+            <dynamicLabelingFontColor>0x191919</dynamicLabelingFontColor>
+            <dynamicLabelingFontFamily>Verdana</dynamicLabelingFontFamily>
+            <dynamicLabelingFontWeight>bold</dynamicLabelingFontWeight>
+            <useproxy>false</useproxy>
+        </layer>
+    </layers>
+    <ui>
+        <widget_dimensions>
+            <width>300</width>
+            <height>350</height>
+        </widget_dimensions>
+        <icons>
+            <!-- Path to programmatically find the assets for Application Builder -->
+            <base_url>widgets/Thematic/assets/images/</base_url>
+            <!-- Title/label for mainState icon across the top widget panel -->
+            <main_icon>i_thematic_icon.png</main_icon>
+            <main_label>Main Panel</main_label>
+            <!-- Title/label for settingsState icon across the top widget panel -->
+            <settings_icon>i_options.png</settings_icon>
+            <settings_label>Settings Panel</settings_label>
+        </icons>
+        <transparency>
+            <comp_label>Transparency</comp_label>
+            <defaulttransparency>0.9</defaulttransparency>
+        </transparency>
+        <color_ramp>
+            <classificationFromColorRampDisplay>Lower values</classificationFromColorRampDisplay>
+            <classificationFromColorRamp>0xCECECE</classificationFromColorRamp>
+            <classificationToColorRampDisplay>Higher values</classificationToColorRampDisplay>
+            <classificationToColorRamp>0x0D538A</classificationToColorRamp>
+        </color_ramp>
+        <classification>
+            <methodsLabel>Classification</methodsLabel>
+            <fieldsLabel>based on</fieldsLabel>
+            <breaksLabel>Number of classes</breaksLabel>
+        </classification>
+        <dynamicLabels>
+            <dynamicLabelsEnabledLabel>Labels</dynamicLabelsEnabledLabel>
+            <dynamicLabelsOnLabel>Hide / Remove</dynamicLabelsOnLabel>
+            <dynamicLabelsOffLabel>Show / Display</dynamicLabelsOffLabel>
+        </dynamicLabels>
+    </ui>
+</configuration>

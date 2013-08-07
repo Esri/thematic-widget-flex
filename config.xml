@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+// Read more about ArcGIS Viewer for Flex - http://links.esri.com/flexviewer
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+<configuration>
+    <title>ArcGIS Viewer for Flex</title>
+    <style>
+        <colors>0xffffff,0x191919,0x101010,0x0,0xcecece</colors>
+        <alpha>0.8</alpha>
+        <font name="Verdana"/>
+        <titlefont name="Verdana"/>
+        <subtitlefont name="Verdana"/>
+    </style>
+    <!-- replace the following url with your own geometryservice -->
+    <geometryservice url="http://tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer"/>
+
+    <!-- UI elements -->
+    <widget left="10" top="50"
+            config="widgets/Navigation/NavigationWidget.xml"
+            url="widgets/Navigation/NavigationWidget.swf"/>
+    <widget right="20" top="55"
+            config="widgets/MapSwitcher/MapSwitcherWidget.xml"
+            url="widgets/MapSwitcher/MapSwitcherWidget.swf"/>
+    <widget left="0" top="0"
+            config="widgets/HeaderController/HeaderControllerWidget.xml"
+            url="widgets/HeaderController/HeaderControllerWidget.swf"/>
+
+    <map top="40"
+         addarcgisbasemaps="true"
+         fullextent="-20000000 -20000000 20000000 20000000"
+         initialextent="-14671017.460939735 2323685.659868761 -6305749.085412265 7068896.3758112425"
+         wraparound180="true">
+         <basemaps>
+         <layer type="tiled" label="Light Gray Canvas" icon="https://www.arcgis.com/sharing/rest/content/items/8b3b470883a744aeb60e5fff0a319ce7/info/thumbnail/templight_gray_canvas_with_labels__ne_usa.png" url="http://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer" visible="true"/>
+         <layer type="tiled" label="Light Gray Canvas" url="http://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer" visible="true" reference="true"/>
+         </basemaps>
+    </map>
+
+    <!-- widgets organized into widget containers that manage close/open etc -->
+    <!-- supported layout property options: horizontal(default)|float|vertical|fix-->
+    <widgetcontainer layout="float">
+        <widget config="widgets/Thematic/ThematicWidget.xml"
+                icon="widgets/Thematic/assets/images/i_thematic_icon.png"
+                label="Thematic"
+                preload="open" bottom="70" right="20"
+                url="widgets/Thematic/ThematicWidget.swf"/>
+    </widgetcontainer>
+
+</configuration>
