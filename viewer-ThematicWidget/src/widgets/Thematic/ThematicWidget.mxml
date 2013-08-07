@@ -225,10 +225,11 @@
                         }
                         //perform any logic related to the map
                         thematicLayer = new ArcGISDynamicMapServiceLayer();
-
-                        thematicLayer.addEventListener(LayerEvent.LOAD, thematicLayer_loadHandler, false, 0, true);
+                        thematicLayerName = configXML.layers.layer.classificationLayerName || "states";
+                        thematicLayer.name = configXML.layers.layer.name || "Thematic layer";
                         thematicLayer.url = configXML.layers.layer.url || "http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer";
                         thematicLayer.proxyURL = proxyurl;
+                        thematicLayer.addEventListener(LayerEvent.LOAD, thematicLayer_loadHandler, false, 0, true);
 
                         detailsTask.url = configXML.layers.layer.url || "http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer";
                         detailsTask.proxyURL = proxyurl;
@@ -236,7 +237,6 @@
                         generateRendererTask.url = configXML.layers.layer.url + "/" + configXML.layers.layer.classificationLayerID;
                         generateRendererTask.proxyURL = proxyurl;
 
-                        thematicLayerName = configXML.layers.layer.classificationLayerName || "states";
 
                         var visibleLayer:Number = Number(configXML.layers.layer.classificationLayerID) || 3;
                         thematicLayer.visibleLayers = new ArrayList([ visibleLayer ]);
@@ -312,7 +312,14 @@
             protected function thematicLayer_loadHandler(event:LayerEvent):void
             {
                 thematicDynamicLayerInfosArray = thematicLayer.createDynamicLayerInfosFromLayerInfos();
-                detailsTask.getAllDetails();
+                if (thematicLayer.supportsDynamicLayers)
+                {
+                    detailsTask.getAllDetails();
+                }
+                else
+                {
+                    Alert.show("Service does not support dynamic layers, please enable dynamic layers on the service.", "ThematicWidget requirement missing");
+                }
             }
 
             protected function detailsTask_getAllDetailsCompleteHandler(event:DetailsEvent):void
@@ -321,16 +328,29 @@
                 thematicLayerDetailsArray = details.layersDetails;
                 var layerDetails:LayerDetails;
 
+                var layerFound:Boolean = false;
+                var layersInService:String = "ID:Name\n";
+
                 for (var i:int = 0; i < thematicLayerDetailsArray.length; i++)
                 {
                     layerDetails = thematicLayerDetailsArray[i];
+                    layersInService += layerDetails.id + ":" + layerDetails.name + "\n";
                     if (layerDetails.name.toLowerCase() == thematicLayerName.toLowerCase() && thematicDynamicLayerInfosArray)
                     {
                         thematicLayerMapSource = DynamicLayerInfo(thematicDynamicLayerInfosArray[i]).source as LayerMapSource;
                         generateRendererTask.source = thematicLayerMapSource;
-                        generateRenderer();
+                        layerFound = true;
                         break;
                     }
+                }
+
+                if (!layerFound)
+                {
+                    Alert.show("Unable to find " + thematicLayerName + " in the configured service layers.\n" + layersInService, "ThematicWidget requirement missing");
+                }
+                else
+                {
+                    generateRenderer();
                 }
             }
 

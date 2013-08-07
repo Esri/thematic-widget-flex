@@ -1,3 +1,11 @@
+## Version 3.4
+
+* Released August 7, 2013
+* Updated build.properties to require ArcGIS API 3.4 for Flex.
+* Updated meta.xml, widget version and description to reflect version 3.4.
+* Added layer name option to the configuration file, used for display purposes only.
+* Added gh_pages branch to host working sample.
+ 
 ## Version 3.3
 
 * Released May 14, 2013

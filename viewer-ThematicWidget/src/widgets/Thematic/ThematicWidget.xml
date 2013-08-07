@@ -20,6 +20,7 @@
     <layers>
         <layer>
             <url>http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer</url>
+            <name>Thematic</name>
             <classificationLayerName>states</classificationLayerName>
             <classificationLayerID>3</classificationLayerID>
             <!-- classification methods: Descs are labels -->
