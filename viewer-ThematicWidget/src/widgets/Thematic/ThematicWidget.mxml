@@ -237,8 +237,8 @@
                         generateRendererTask.url = configXML.layers.layer.url + "/" + configXML.layers.layer.classificationLayerID;
                         generateRendererTask.proxyURL = proxyurl;
 
-
-                        var visibleLayer:Number = Number(configXML.layers.layer.classificationLayerID) || 3;
+                        var parsedVisibleLayer:Number = parseInt(configXML.layers.layer.classificationLayerID);
+                        var visibleLayer:Number = isNaN(parsedVisibleLayer) ? 0 : parsedVisibleLayer;
                         thematicLayer.visibleLayers = new ArrayList([ visibleLayer ]);
 
                         map.addLayer(thematicLayer);
