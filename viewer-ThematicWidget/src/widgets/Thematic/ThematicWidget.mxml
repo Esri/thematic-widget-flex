@@ -295,9 +295,11 @@
                 }
             }
 
-            //--------------------------------------
+            //--------------------------------------------------------------------------
+            //
             //  WidgetTemplate event handler functions
-            //--------------------------------------
+            //
+            //--------------------------------------------------------------------------
             /**
              * Called when the widget is closed.  Use this event to
              * process any logic when the widget is closed.  Such as
@@ -336,9 +338,11 @@
             {
             }
 
-            //---------------------------------------------
-            //	Functions for UI state changes
-            //---------------------------------------------
+            //--------------------------------------------------------------------------
+            //
+            //  Functions for UI state changes
+            //
+            //--------------------------------------------------------------------------
             /**
              * Called when the widget changes to the main state.
              */
@@ -355,9 +359,11 @@
                 this.currentState = "settingsState";
             }
 
-            //---------------------------------------------
-            //	Functions for layer load and initialization
-            //---------------------------------------------
+            //--------------------------------------------------------------------------
+            //
+            //  Functions for layer load and initialization
+            //
+            //--------------------------------------------------------------------------
             protected function setThematicLayerConfiguration(thematicLayerConfig:Object):void
             {
                 if (thematicLayer && thematicLayer.loaded)
@@ -493,9 +499,11 @@
                 Alert.show("Error code(" + event.fault.faultCode + "): " + event.fault.faultString, "Unable to determine service metadata details");
             }
 
-            //---------------------------------------------
-            //	Functions for creating thematic renderer
-            //---------------------------------------------
+            //--------------------------------------------------------------------------
+            //
+            //  Functions for creating thematic renderer
+            //
+            //--------------------------------------------------------------------------
             protected function generateRenderer():void
             {
                 classificationBreaksDefinition.breakCount = classificationBreakCount;
@@ -541,9 +549,11 @@
                 legend.layers = [ thematicLayer ];
             }
 
-            //------------------------------------------------
-            //	Functions for classification and layer changes
-            //------------------------------------------------
+            //--------------------------------------------------------------------------
+            //
+            //  Functions for classification and layer changes
+            //
+            //--------------------------------------------------------------------------
             protected function classificationMethodsDDL_changeHandler(event:IndexChangeEvent):void
             {
                 classificationMethod = DropDownList(event.currentTarget).selectedItem.data;
