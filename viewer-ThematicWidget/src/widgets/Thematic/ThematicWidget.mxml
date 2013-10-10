@@ -552,6 +552,11 @@
                 legend.layers = [ thematicLayer ];
             }
 
+            protected function generateRendererTask_faultHandler(event:FaultEvent):void
+            {
+                Alert.show("Error code(" + event.fault.faultCode + "): " + event.fault.faultString, "Map generation unsuccessful");
+            }
+
             //--------------------------------------------------------------------------
             //
             //  Functions for classification and layer changes
