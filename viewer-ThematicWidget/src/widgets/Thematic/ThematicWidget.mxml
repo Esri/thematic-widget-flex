@@ -140,81 +140,136 @@
             {
                 if (configXML)
                 {
-                    //configure widget width and height
+                    //--------------------------------------------------------------------------
+                    //
+                    //  Configure widget width and height
+                    //
+                    //--------------------------------------------------------------------------
                     var mWidth:String = configXML.ui.widget_dimensions.width || "300";
                     var mHeight:String = configXML.ui.widget_dimensions.height || "300";
                     widgetWidth = Number(mWidth);
                     widgetHeight = Number(mHeight);
                     widgetTemplate.width = widgetWidth;
                     widgetTemplate.height = widgetHeight;
-                    //configure UI: assets, icons, etc.
+                    //--------------------------------------------------------------------------
+                    //
+                    //  Configure widget panels
+                    //
+                    //--------------------------------------------------------------------------
                     ICON_URL = configXML.ui.icons.base_url || "assets/images";
                     mainPanelIcon = configXML.ui.icons.main_icon || "i_widget.png";
                     mainPanelLabel = configXML.ui.icons.main_label || "Main Panel";
                     settingsPanelIcon = configXML.ui.icons.settings_icon || "i_options.png";
                     settingsPanelLabel = configXML.ui.icons.settings_label || "Settings Panel";
+                    //add icons to widget
+                    widgetTemplate.addTitlebarButton(ICON_URL + mainPanelIcon, mainPanelLabel, showStateMainUI);
+                    widgetTemplate.addTitlebarButton(ICON_URL + settingsPanelIcon, settingsPanelLabel, showStateSettingsUI);
+                    //--------------------------------------------------------------------------
+                    //
+                    //  Configure settings panel
+                    //
+                    //--------------------------------------------------------------------------
                     //classification labels
                     classificationMethodsLabelDisplay = configXML.ui.classification.methodsLabel || "Class Methods";
                     classificationFieldsLabelDisplay = configXML.ui.classification.fieldsLabel || "Class Fields";
                     classificationNumberOfBreaksLabel = configXML.ui.classification.breaksLabel || "Class Breaks";
-                    //classification methods
-                    var classificationMethodsLabelConfig:String = configXML.layers.layer.classificationMethodTypeDescs;
-                    var classificationMethodsDataConfig:String = configXML.layers.layer.classificationMethodTypes;
-                    var classificationMethodsAC:ArrayCollection = UIComponentUtil.getComboBoxDataProvider(classificationMethodsLabelConfig, classificationMethodsDataConfig);
-                    if (classificationMethodsAC.length > 0)
-                    {
-                        var classificationMethodItem:Object = classificationMethodsAC.getItemAt(0);
-                        classificationMethod = classificationMethodItem.data;
-                        classificationMethodsDDL.dataProvider = classificationMethodsAC;
-                    }
-                    else
-                    {
-                        classificationMethod = ClassBreaksDefinition.CLASSIFY_EQUAL_INTERVAL;
-                    }
-                    //classification fields
-                    var classificationFieldsLabelConfig:String = configXML.layers.layer.classificationFieldTypeDescs;
-                    var classificationFieldsDataConfig:String = configXML.layers.layer.classificationFieldTypes;
-                    var classificationFieldsAC:ArrayCollection = UIComponentUtil.getComboBoxDataProvider(classificationFieldsLabelConfig, classificationFieldsDataConfig);
-                    if (classificationFieldsAC.length > 0)
-                    {
-                        var defaultClassificationItem:Object = classificationFieldsAC.getItemAt(0);
-                        classificationField = defaultClassificationItem.data;
-                        classificationFieldAlias = defaultClassificationItem.label;
-                        classificationFieldsDDL.dataProvider = classificationFieldsAC;
-                    }
-                    else
-                    {
-                        classificationField = "POP07_SQMI";
-                        classificationFieldAlias = "Pop 2007";
-                    }
-                    //classification breaks
-                    var classificationMinimumNumberOfBreaks:Number = Number(configXML.layers.layer.classificationBreaksMin) || 5;
-                    var classificationMaximumNumberOfBreaks:Number = Number(configXML.layers.layer.classificationBreaksMax) || 11;
-                    var classificationDefaultNumberOfBreaks:Number = Number(configXML.layers.layer.classificationBreaksDefault) || 6;
-                    classificationNumberOfClassBreaksNS.minimum = classificationMinimumNumberOfBreaks;
-                    classificationNumberOfClassBreaksNS.maximum = classificationMaximumNumberOfBreaks;
-                    classificationNumberOfClassBreaksNS.value = classificationDefaultNumberOfBreaks;
-                    //color ramps
+                    //color ramps labels
                     classificationFromColorRampDisplay = configXML.ui.color_ramp.classificationFromColorRampDisplay || "From Color:";
                     classificationToColorRampDisplay = configXML.ui.color_ramp.classificationToColorRampDisplay || "To Color:";
-                    classificationColorRampFromSelectedColor = uint(configXML.ui.color_ramp.classificationFromColorRamp) || uint(getStyle('chromeColor'));
-                    classificationColorRampToSelectedColor = uint(configXML.ui.color_ramp.classificationToColorRamp) || uint(getStyle('focusColor'));
                     //transparency
-                    thematicLayerAlpha = Number(configXML.ui.transparency.defaulttransparency) || 1.0;
                     transparencyLabelDisplay = configXML.ui.transparency.comp_label || "Transparency:";
                     //dynamic labels
                     dynamicLabelsEnabledLabel = configXML.ui.dynamicLabels.dynamicLabelsEnabledLabel || "Label";
                     dynamicLabelsOnLabel = configXML.ui.dynamicLabels.dynamicLabelsOnLabel || "On";
                     dynamicLabelsOffLabel = configXML.ui.dynamicLabels.dynamicLabelsOffLabel || "Off";
-                    dynamicLabelsMinScale = Number(configXML.layers.layer.dynamicLabelingMinScale) || 18489297;
-                    //label class and label options
-                    thematicLabelClass.labelPlacement = configXML.layers.layer.dynamicLabelingPlacement;
-                    thematicLabelOptions.color = uint(configXML.layers.layer.dynamicLabelingFontColor) || 0x333333;
-                    thematicLabelOptions.fontFamily = configXML.layers.layer.dynamicLabelingFontFamily || "Verdana";
-                    thematicLabelOptions.fontWeight = configXML.layers.layer.dynamicLabelingFontWeight || "bold";
-                    //add icons to widget
-                    widgetTemplate.addTitlebarButton(ICON_URL + mainPanelIcon, mainPanelLabel, showStateMainUI);
-                    widgetTemplate.addTitlebarButton(ICON_URL + settingsPanelIcon, settingsPanelLabel, showStateSettingsUI);
+
+
+                    //--------------------------------------------------------------------------
+                    //
+                    //  loop through all the layers in the config file
+                    //
+                    //--------------------------------------------------------------------------
+                    var layerList:XMLList = configXML..layer;
+
+                    for (var i:int = 0; i < layerList.length(); i++)
+                    {
+                        var lyrURL:String = layerList[i].url || "http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer";
+                        var lyrName:String = layerList[i].name || "Thematic layer";
+                        var lyrAlpha:Number = Number(layerList[i].defaulttransparency) || 1.0;
+
+                        //ask the widget configuration if it wants to use a proxy
+                        useproxy = layerList[i].useproxy == "true";
+                        if (useproxy && configData.proxyUrl)
+                        {
+                            //configure proxy url from main configuration file
+                            proxyurl = configData.proxyUrl;
+                        }
+
+                        var taskURL:String = lyrURL + "/" + layerList[i].classificationLayerID;
+
+                        var parsedVisibleLayer:Number = parseInt(layerList[i].classificationLayerID);
+                        var visibleLayer:Number = isNaN(parsedVisibleLayer) ? 0 : parsedVisibleLayer;
+
+                        var parsedZoomScale:Number = parseInt(layerList[i].zoomscale);
+                        var zoomScale:Number = isNaN(parsedZoomScale) ? 0 : parsedZoomScale;
+
+                        var classificationLayerName:String = layerList[i].classificationLayerName || "states";
+
+                        //classification methods
+                        var classificationMethodsLabelConfig:String = layerList[i].classificationMethodTypeDescs;
+                        var classificationMethodsDataConfig:String = layerList[i].classificationMethodTypes;
+                        var classificationMethodsAC:ArrayCollection = UIComponentUtil.getComboBoxDataProvider(classificationMethodsLabelConfig, classificationMethodsDataConfig);
+
+                        //classification fields
+                        var classificationFieldsLabelConfig:String = layerList[i].classificationFieldTypeDescs;
+                        var classificationFieldsDataConfig:String = layerList[i].classificationFieldTypes;
+                        var classificationFieldsAC:ArrayCollection = UIComponentUtil.getComboBoxDataProvider(classificationFieldsLabelConfig, classificationFieldsDataConfig);
+
+                        //classification breaks
+                        var classificationMinimumNumberOfBreaks:Number = Number(layerList[i].classificationBreaksMin) || 5;
+                        var classificationMaximumNumberOfBreaks:Number = Number(layerList[i].classificationBreaksMax) || 11;
+                        var classificationDefaultNumberOfBreaks:Number = Number(layerList[i].classificationBreaksDefault) || 4;
+                        //color ramps
+                        var classificationColorRampFromColor:uint = uint(layerList[i].classificationFromColorRamp) || uint(getStyle('chromeColor'));
+                        var classificationColorRampToColor:uint = uint(layerList[i].classificationToColorRamp) || uint(getStyle('focusColor'));
+
+                        //dynamic labels
+                        var thematicLabelOptionsMinScale:Number = Number(layerList[i].dynamicLabelingMinScale) || 18489297;
+                        //label class and label options
+                        var thematicLabelClassLabelPlacement:String = layerList[i].dynamicLabelingPlacement;
+                        var thematicLabelOptionsColor:uint = uint(layerList[i].dynamicLabelingFontColor) || 0x333333;
+                        var thematicLabelOptionsFontFamily:String = layerList[i].dynamicLabelingFontFamily || "Verdana";
+                        var thematicLabelOptionsFontWeight:String = layerList[i].dynamicLabelingFontWeight || "bold";
+
+                        // configuration thematic layer object
+                        var layerObject:Object =
+                            {
+                                label: lyrName,
+                                url: lyrURL,
+                                id: lyrName + ":" + i,
+                                name: "hiddenLayer_" + lyrName,
+                                alpha: lyrAlpha,
+                                visibleLayer: visibleLayer,
+                                proxyURL: proxyurl,
+                                zoomScale: zoomScale,
+                                generateRendererTaskURL: taskURL,
+                                classificationLayerName: classificationLayerName,
+                                classificationMethodDataProvider: classificationMethodsAC,
+                                classificationFieldsDataProvider: classificationFieldsAC,
+                                classificationMinimumNumberOfBreaks: classificationMinimumNumberOfBreaks,
+                                classificationMaximumNumberOfBreaks: classificationMaximumNumberOfBreaks,
+                                classificationDefaultNumberOfBreaks: classificationDefaultNumberOfBreaks,
+                                classificationColorRampFromColor: classificationColorRampFromColor,
+                                classificationColorRampToColor: classificationColorRampToColor,
+                                thematicLabelOptionsMinScale: thematicLabelOptionsMinScale,
+                                thematicLabelClassLabelPlacement: thematicLabelClassLabelPlacement,
+                                thematicLabelOptionsColor: thematicLabelOptionsColor,
+                                thematicLabelOptionsFontFamily: thematicLabelOptionsFontFamily,
+                                thematicLabelOptionsFontWeight: thematicLabelOptionsFontWeight
+                            };
+
+                        thematicLayersConfig.push(layerObject);
+                    }
 
                     //after the map has loaded sucessfully interact with the map reference
                     if (map.loaded)
