@@ -523,6 +523,12 @@
                     thematicLabelClass.labelExpression = '"' + classificationFieldAlias + '" CONCAT NEWLINE CONCAT [' + classificationField + ']';
                     thematicLabelClass.minScale = dynamicLabelsMinScale;
                     thematicLayerDrawingOptions.labelClasses = [ thematicLabelClass ];
+
+                    if (map.scale > dynamicLabelsMinScale && showDynamicLabelInScaleRangeMessage)
+                    {
+                        Alert.show("Labels may be configured to only display at certain scales\n You may need to zoom in for the labels to display", "Label visibility warning");
+                        showDynamicLabelInScaleRangeMessage = false;
+                    }
                 }
                 else
                 {
