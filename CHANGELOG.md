@@ -1,3 +1,11 @@
+## Version 3.5
+* Released October 10th, 2013
+* Updated build.properties to require ArcGIS API 3.5 for Flex.
+* Updated meta.xml, widget version and description to reflect version 3.5.
+* Updated [gh_pages branch][gh_pages]
+* [Fixed issue][ghi20]: where classification layer id was parsed incorrectly.
+* Added [user enhancement request][uer1] to support multiple layers inside of widget configuration, see [GitHub Issue 18][ghi18]
+
 ## Version 3.4
 
 * Released August 7, 2013
@@ -45,3 +53,10 @@
     * ArcGIS 10.1 or later required for dynamic layer support.
     * Developers: Requires Adobe Flex SDK 4.6.0 and ArcGIS API 3.0 for Flex.
 * This code sample was originally designed to support the 2012 User Conference session "ArcGIS Viewer for Flex - Advanced Topics".
+
+[gh_pages]: http://esri.github.io/thematic-widget-flex
+
+[ghi18]: https://github.com/Esri/thematic-widget-flex/issues/18
+[ghi20]: https://github.com/Esri/thematic-widget-flex/issues/20
+
+[uer1]: http://forums.arcgis.com/threads/76036-thematic-widget-flex?p=299903&viewfull=1#post299903

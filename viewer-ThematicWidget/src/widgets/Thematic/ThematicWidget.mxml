@@ -76,6 +76,8 @@
             private var settingsPanelIcon:String;
             [Bindable]
             private var settingsPanelLabel:String;
+            //thematic layers
+            private var thematicLayersConfig:Array = [];
             //thematic layer
             [Bindable]
             private var thematicLayer:ArcGISDynamicMapServiceLayer;
@@ -120,6 +122,7 @@
             [Bindable]
             private var dynamicLabelsOffLabel:String;
             private var dynamicLabelsMinScale:Number;
+            private var showDynamicLabelInScaleRangeMessage:Boolean = true;
 
             private var useproxy:Boolean;
             private var proxyurl:String;
@@ -137,118 +140,166 @@
             {
                 if (configXML)
                 {
-                    //configure widget width and height
+                    //--------------------------------------------------------------------------
+                    //
+                    //  Configure widget width and height
+                    //
+                    //--------------------------------------------------------------------------
                     var mWidth:String = configXML.ui.widget_dimensions.width || "300";
                     var mHeight:String = configXML.ui.widget_dimensions.height || "300";
                     widgetWidth = Number(mWidth);
                     widgetHeight = Number(mHeight);
                     widgetTemplate.width = widgetWidth;
                     widgetTemplate.height = widgetHeight;
-                    //configure UI: assets, icons, etc.
+                    //--------------------------------------------------------------------------
+                    //
+                    //  Configure widget panels
+                    //
+                    //--------------------------------------------------------------------------
                     ICON_URL = configXML.ui.icons.base_url || "assets/images";
                     mainPanelIcon = configXML.ui.icons.main_icon || "i_widget.png";
                     mainPanelLabel = configXML.ui.icons.main_label || "Main Panel";
                     settingsPanelIcon = configXML.ui.icons.settings_icon || "i_options.png";
                     settingsPanelLabel = configXML.ui.icons.settings_label || "Settings Panel";
+                    //add icons to widget
+                    widgetTemplate.addTitlebarButton(ICON_URL + mainPanelIcon, mainPanelLabel, showStateMainUI);
+                    widgetTemplate.addTitlebarButton(ICON_URL + settingsPanelIcon, settingsPanelLabel, showStateSettingsUI);
+                    //--------------------------------------------------------------------------
+                    //
+                    //  Configure settings panel
+                    //
+                    //--------------------------------------------------------------------------
                     //classification labels
                     classificationMethodsLabelDisplay = configXML.ui.classification.methodsLabel || "Class Methods";
                     classificationFieldsLabelDisplay = configXML.ui.classification.fieldsLabel || "Class Fields";
                     classificationNumberOfBreaksLabel = configXML.ui.classification.breaksLabel || "Class Breaks";
-                    //classification methods
-                    var classificationMethodsLabelConfig:String = configXML.layers.layer.classificationMethodTypeDescs;
-                    var classificationMethodsDataConfig:String = configXML.layers.layer.classificationMethodTypes;
-                    var classificationMethodsAC:ArrayCollection = UIComponentUtil.getComboBoxDataProvider(classificationMethodsLabelConfig, classificationMethodsDataConfig);
-                    if (classificationMethodsAC.length > 0)
-                    {
-                        var classificationMethodItem:Object = classificationMethodsAC.getItemAt(0);
-                        classificationMethod = classificationMethodItem.data;
-                        classificationMethodsDDL.dataProvider = classificationMethodsAC;
-                    }
-                    else
-                    {
-                        classificationMethod = ClassBreaksDefinition.CLASSIFY_EQUAL_INTERVAL;
-                    }
-                    //classification fields
-                    var classificationFieldsLabelConfig:String = configXML.layers.layer.classificationFieldTypeDescs;
-                    var classificationFieldsDataConfig:String = configXML.layers.layer.classificationFieldTypes;
-                    var classificationFieldsAC:ArrayCollection = UIComponentUtil.getComboBoxDataProvider(classificationFieldsLabelConfig, classificationFieldsDataConfig);
-                    if (classificationFieldsAC.length > 0)
-                    {
-                        var defaultClassificationItem:Object = classificationFieldsAC.getItemAt(0);
-                        classificationField = defaultClassificationItem.data;
-                        classificationFieldAlias = defaultClassificationItem.label;
-                        classificationFieldsDDL.dataProvider = classificationFieldsAC;
-                    }
-                    else
-                    {
-                        classificationField = "POP07_SQMI";
-                        classificationFieldAlias = "Pop 2007";
-                    }
-                    //classification breaks
-                    var classificationMinimumNumberOfBreaks:Number = Number(configXML.layers.layer.classificationBreaksMin) || 5;
-                    var classificationMaximumNumberOfBreaks:Number = Number(configXML.layers.layer.classificationBreaksMax) || 11;
-                    var classificationDefaultNumberOfBreaks:Number = Number(configXML.layers.layer.classificationBreaksDefault) || 6;
-                    classificationNumberOfClassBreaksNS.minimum = classificationMinimumNumberOfBreaks;
-                    classificationNumberOfClassBreaksNS.maximum = classificationMaximumNumberOfBreaks;
-                    classificationNumberOfClassBreaksNS.value = classificationDefaultNumberOfBreaks;
-                    //color ramps
+                    //color ramps labels
                     classificationFromColorRampDisplay = configXML.ui.color_ramp.classificationFromColorRampDisplay || "From Color:";
                     classificationToColorRampDisplay = configXML.ui.color_ramp.classificationToColorRampDisplay || "To Color:";
-                    classificationColorRampFromSelectedColor = uint(configXML.ui.color_ramp.classificationFromColorRamp) || uint(getStyle('chromeColor'));
-                    classificationColorRampToSelectedColor = uint(configXML.ui.color_ramp.classificationToColorRamp) || uint(getStyle('focusColor'));
                     //transparency
-                    thematicLayerAlpha = Number(configXML.ui.transparency.defaulttransparency) || 1.0;
                     transparencyLabelDisplay = configXML.ui.transparency.comp_label || "Transparency:";
                     //dynamic labels
                     dynamicLabelsEnabledLabel = configXML.ui.dynamicLabels.dynamicLabelsEnabledLabel || "Label";
                     dynamicLabelsOnLabel = configXML.ui.dynamicLabels.dynamicLabelsOnLabel || "On";
                     dynamicLabelsOffLabel = configXML.ui.dynamicLabels.dynamicLabelsOffLabel || "Off";
-                    dynamicLabelsMinScale = Number(configXML.layers.layer.dynamicLabelingMinScale) || 18489297;
-                    //label class and label options
-                    thematicLabelClass.labelPlacement = configXML.layers.layer.dynamicLabelingPlacement;
-                    thematicLabelOptions.color = uint(configXML.layers.layer.dynamicLabelingFontColor) || 0x333333;
-                    thematicLabelOptions.fontFamily = configXML.layers.layer.dynamicLabelingFontFamily || "Verdana";
-                    thematicLabelOptions.fontWeight = configXML.layers.layer.dynamicLabelingFontWeight || "bold";
-                    //add icons to widget
-                    widgetTemplate.addTitlebarButton(ICON_URL + mainPanelIcon, mainPanelLabel, showStateMainUI);
-                    widgetTemplate.addTitlebarButton(ICON_URL + settingsPanelIcon, settingsPanelLabel, showStateSettingsUI);
 
-                    //after the map has loaded sucessfully interact with the map reference
-                    if (map.loaded)
+
+                    //--------------------------------------------------------------------------
+                    //
+                    //  loop through all the layers in the config file
+                    //
+                    //--------------------------------------------------------------------------
+                    var layerList:XMLList = configXML..layer;
+
+                    for (var i:int = 0; i < layerList.length(); i++)
                     {
+                        var lyrURL:String = layerList[i].url || "http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer";
+                        var lyrName:String = layerList[i].name || "Thematic layer";
+                        var lyrAlpha:Number = Number(layerList[i].defaulttransparency) || 1.0;
+
                         //ask the widget configuration if it wants to use a proxy
-                        useproxy = configXML.layers.layer.useproxy == "true";
-                        if (useproxy)
+                        useproxy = layerList[i].useproxy == "true";
+                        if (useproxy && configData.proxyUrl)
                         {
                             //configure proxy url from main configuration file
                             proxyurl = configData.proxyUrl;
                         }
-                        //perform any logic related to the map
-                        thematicLayer = new ArcGISDynamicMapServiceLayer();
-                        thematicLayerName = configXML.layers.layer.classificationLayerName || "states";
-                        thematicLayer.name = configXML.layers.layer.name || "Thematic layer";
-                        thematicLayer.url = configXML.layers.layer.url || "http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer";
-                        thematicLayer.proxyURL = proxyurl;
-                        thematicLayer.addEventListener(LayerEvent.LOAD, thematicLayer_loadHandler, false, 0, true);
 
-                        detailsTask.url = configXML.layers.layer.url || "http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer";
-                        detailsTask.proxyURL = proxyurl;
+                        var taskURL:String = lyrURL + "/" + layerList[i].classificationLayerID;
 
-                        generateRendererTask.url = configXML.layers.layer.url + "/" + configXML.layers.layer.classificationLayerID;
-                        generateRendererTask.proxyURL = proxyurl;
+                        var parsedVisibleLayer:Number = parseInt(layerList[i].classificationLayerID);
+                        var visibleLayer:Number = isNaN(parsedVisibleLayer) ? 0 : parsedVisibleLayer;
 
+                        var parsedZoomScale:Number = parseInt(layerList[i].zoomscale);
+                        var zoomScale:Number = isNaN(parsedZoomScale) ? 0 : parsedZoomScale;
 
-                        var visibleLayer:Number = Number(configXML.layers.layer.classificationLayerID) || 3;
-                        thematicLayer.visibleLayers = new ArrayList([ visibleLayer ]);
+                        var classificationLayerName:String = layerList[i].classificationLayerName || "states";
 
-                        map.addLayer(thematicLayer);
+                        //classification methods
+                        var classificationMethodsLabelConfig:String = layerList[i].classificationMethodTypeDescs;
+                        var classificationMethodsDataConfig:String = layerList[i].classificationMethodTypes;
+                        var classificationMethodsAC:ArrayCollection = UIComponentUtil.getComboBoxDataProvider(classificationMethodsLabelConfig, classificationMethodsDataConfig);
+
+                        //classification fields
+                        var classificationFieldsLabelConfig:String = layerList[i].classificationFieldTypeDescs;
+                        var classificationFieldsDataConfig:String = layerList[i].classificationFieldTypes;
+                        var classificationFieldsAC:ArrayCollection = UIComponentUtil.getComboBoxDataProvider(classificationFieldsLabelConfig, classificationFieldsDataConfig);
+
+                        //classification breaks
+                        var classificationMinimumNumberOfBreaks:Number = Number(layerList[i].classificationBreaksMin) || 5;
+                        var classificationMaximumNumberOfBreaks:Number = Number(layerList[i].classificationBreaksMax) || 11;
+                        var classificationDefaultNumberOfBreaks:Number = Number(layerList[i].classificationBreaksDefault) || 4;
+                        //color ramps
+                        var classificationColorRampFromColor:uint = uint(layerList[i].classificationFromColorRamp) || uint(getStyle('chromeColor'));
+                        var classificationColorRampToColor:uint = uint(layerList[i].classificationToColorRamp) || uint(getStyle('focusColor'));
+
+                        //dynamic labels
+                        var thematicLabelOptionsMinScale:Number = Number(layerList[i].dynamicLabelingMinScale) || 18489297;
+                        //label class and label options
+                        var thematicLabelClassLabelPlacement:String = layerList[i].dynamicLabelingPlacement;
+                        var thematicLabelOptionsColor:uint = uint(layerList[i].dynamicLabelingFontColor) || 0x333333;
+                        var thematicLabelOptionsFontFamily:String = layerList[i].dynamicLabelingFontFamily || "Verdana";
+                        var thematicLabelOptionsFontWeight:String = layerList[i].dynamicLabelingFontWeight || "bold";
+
+                        // configuration thematic layer object
+                        var layerObject:Object =
+                            {
+                                label: lyrName,
+                                url: lyrURL,
+                                id: lyrName + ":" + i,
+                                name: "hiddenLayer_" + lyrName,
+                                alpha: lyrAlpha,
+                                visibleLayer: visibleLayer,
+                                proxyURL: proxyurl,
+                                zoomScale: zoomScale,
+                                generateRendererTaskURL: taskURL,
+                                classificationLayerName: classificationLayerName,
+                                classificationMethodDataProvider: classificationMethodsAC,
+                                classificationFieldsDataProvider: classificationFieldsAC,
+                                classificationMinimumNumberOfBreaks: classificationMinimumNumberOfBreaks,
+                                classificationMaximumNumberOfBreaks: classificationMaximumNumberOfBreaks,
+                                classificationDefaultNumberOfBreaks: classificationDefaultNumberOfBreaks,
+                                classificationColorRampFromColor: classificationColorRampFromColor,
+                                classificationColorRampToColor: classificationColorRampToColor,
+                                thematicLabelOptionsMinScale: thematicLabelOptionsMinScale,
+                                thematicLabelClassLabelPlacement: thematicLabelClassLabelPlacement,
+                                thematicLabelOptionsColor: thematicLabelOptionsColor,
+                                thematicLabelOptionsFontFamily: thematicLabelOptionsFontFamily,
+                                thematicLabelOptionsFontWeight: thematicLabelOptionsFontWeight
+                            };
+
+                        thematicLayersConfig.push(layerObject);
+                    }
+
+                    //after the map has loaded sucessfully interact with the map reference
+                    if (map.loaded)
+                    {
+                        if (thematicLayersConfig.length > 0)
+                        {
+                            // use the first layer in the configuration as the default
+                            var initialLayer:Object = thematicLayersConfig[0] as Object;
+                            setThematicLayerConfiguration(initialLayer);
+                            // if there are more than one layer in the configuration, enable the drop down list
+                            if (thematicLayersConfig.length > 1)
+                            {
+                                thematicLayersDropDownList.includeInLayout = true;
+                                thematicLayersDropDownList.visible = true;
+                                thematicLayersDropDownList.dataProvider = new ArrayCollection(thematicLayersConfig);
+                            }
+                        }
+                        else
+                        {
+                            Alert.show("There needs to be at least one layer in the configuration file.", "ThematicWidget requirement missing");
+                        }
                     }
                 }
             }
 
-            //--------------------------------------
+            //--------------------------------------------------------------------------
+            //
             //  WidgetTemplate event handler functions
-            //--------------------------------------
+            //
+            //--------------------------------------------------------------------------
             /**
              * Called when the widget is closed.  Use this event to
              * process any logic when the widget is closed.  Such as
@@ -287,9 +338,11 @@
             {
             }
 
-            //---------------------------------------------
-            //	Functions for UI state changes
-            //---------------------------------------------
+            //--------------------------------------------------------------------------
+            //
+            //  Functions for UI state changes
+            //
+            //--------------------------------------------------------------------------
             /**
              * Called when the widget changes to the main state.
              */
@@ -306,11 +359,93 @@
                 this.currentState = "settingsState";
             }
 
-            //---------------------------------------------
-            //	Functions for layer load and initialization
-            //---------------------------------------------
+            //--------------------------------------------------------------------------
+            //
+            //  Functions for layer load and initialization
+            //
+            //--------------------------------------------------------------------------
+            protected function setThematicLayerConfiguration(thematicLayerConfig:Object):void
+            {
+                if (thematicLayer && thematicLayer.loaded)
+                {
+                    map.removeLayer(thematicLayer);
+                }
+
+                //create the layer
+                thematicLayer = new ArcGISDynamicMapServiceLayer(thematicLayerConfig.url);
+                thematicLayer.id = thematicLayerConfig.id;
+                thematicLayer.name = thematicLayerConfig.name;
+                thematicLayer.alpha = thematicLayerConfig.alpha;
+                thematicLayer.visibleLayers = new ArrayList([ thematicLayerConfig.visibleLayer ]);
+                thematicLayer.proxyURL = thematicLayerConfig.proxyurl;
+                thematicLayer.addEventListener(LayerEvent.LOAD, thematicLayer_loadHandler, false, 0, true);
+                thematicLayer.addEventListener(LayerEvent.LOAD_ERROR, thematicLayer_faultHandler, false, 0, true);
+
+                var _classificationMethodsAC:ArrayCollection = thematicLayerConfig.classificationMethodDataProvider as ArrayCollection;
+                if (_classificationMethodsAC.length > 0)
+                {
+                    var classificationMethodItem:Object = _classificationMethodsAC.getItemAt(0);
+                    classificationMethod = classificationMethodItem.data;
+                    classificationMethodsDDL.dataProvider = _classificationMethodsAC;
+                    classificationMethodsDDL.selectedIndex = 0;
+                }
+                else
+                {
+                    classificationMethod = ClassBreaksDefinition.CLASSIFY_EQUAL_INTERVAL;
+                }
+
+                var _classificationFieldsAC:ArrayCollection = thematicLayerConfig.classificationFieldsDataProvider as ArrayCollection;
+                if (_classificationFieldsAC.length > 0)
+                {
+                    var defaultClassificationItem:Object = _classificationFieldsAC.getItemAt(0);
+                    classificationField = defaultClassificationItem.data;
+                    classificationFieldAlias = defaultClassificationItem.label;
+                    classificationFieldsDDL.dataProvider = _classificationFieldsAC;
+                    classificationFieldsDDL.selectedIndex = 0;
+                }
+                else
+                {
+                    classificationField = "POP07_SQMI";
+                    classificationFieldAlias = "Pop 2007";
+                }
+
+                thematicLayerName = thematicLayerConfig.classificationLayerName;
+                //classification breaks
+                classificationNumberOfClassBreaksNS.minimum = thematicLayerConfig.classificationMinimumNumberOfBreaks;
+                classificationNumberOfClassBreaksNS.maximum = thematicLayerConfig.classificationMaximumNumberOfBreaks;
+                classificationNumberOfClassBreaksNS.value = thematicLayerConfig.classificationDefaultNumberOfBreaks;
+
+                //color ramps
+                classificationColorRampFromSelectedColor = thematicLayerConfig.classificationColorRampFromColor;
+                classificationColorRampToSelectedColor = thematicLayerConfig.classificationColorRampToColor;
+
+                //dynamic labels
+                dynamicLabelsMinScale = thematicLayerConfig.thematicLabelOptionsMinScale;
+                //label class and label options
+                thematicLabelClass.labelPlacement = thematicLayerConfig.thematicLabelClassLabelPlacement;
+                thematicLabelOptions.color = thematicLayerConfig.thematicLabelOptionsColor;
+                thematicLabelOptions.fontFamily = thematicLayerConfig.thematicLabelOptionsFontFamily;
+                thematicLabelOptions.fontWeight = thematicLayerConfig.thematicLabelOptionsFontWeight;
+
+                thematicLayerAlpha = thematicLayer.alpha;
+                detailsTask.url = thematicLayer.url;
+                detailsTask.proxyURL = thematicLayer.proxyURL;
+
+                generateRendererTask.url = thematicLayerConfig.generateRendererTaskURL;
+                generateRendererTask.proxyURL = thematicLayer.proxyURL;
+
+                if (thematicLayerConfig.zoomScale > 0)
+                {
+                    map.scale = thematicLayerConfig.zoomScale;
+                }
+                map.addLayer(thematicLayer);
+            }
+
             protected function thematicLayer_loadHandler(event:LayerEvent):void
             {
+                thematicLayer.removeEventListener(LayerEvent.LOAD, thematicLayer_loadHandler);
+                thematicLayer.removeEventListener(LayerEvent.LOAD_ERROR, thematicLayer_faultHandler);
+
                 thematicDynamicLayerInfosArray = thematicLayer.createDynamicLayerInfosFromLayerInfos();
                 if (thematicLayer.supportsDynamicLayers)
                 {
@@ -320,6 +455,14 @@
                 {
                     Alert.show("Service does not support dynamic layers, please enable dynamic layers on the service.", "ThematicWidget requirement missing");
                 }
+            }
+
+            protected function thematicLayer_faultHandler(event:LayerEvent):void
+            {
+                thematicLayer.removeEventListener(LayerEvent.LOAD, thematicLayer_loadHandler);
+                thematicLayer.removeEventListener(LayerEvent.LOAD_ERROR, thematicLayer_faultHandler);
+
+                Alert.show("An error occurred while attempting to load the service (" + ArcGISDynamicMapServiceLayer(event.layer).url + ").\n" + event.fault.faultString, "Service error");
             }
 
             protected function detailsTask_getAllDetailsCompleteHandler(event:DetailsEvent):void
@@ -354,14 +497,16 @@
                 }
             }
 
-            protected function esriService_faultHandler(event:FaultEvent):void
+            protected function detailsTask_faultHandler(event:FaultEvent):void
             {
-                Alert.show("Error: " + event.fault.faultString, "Error code: " + event.fault.faultCode);
+                Alert.show("Error code(" + event.fault.faultCode + "): " + event.fault.faultString, "Unable to determine service metadata details");
             }
 
-            //---------------------------------------------
-            //	Functions for creating thematic renderer
-            //---------------------------------------------
+            //--------------------------------------------------------------------------
+            //
+            //  Functions for creating thematic renderer
+            //
+            //--------------------------------------------------------------------------
             protected function generateRenderer():void
             {
                 classificationBreaksDefinition.breakCount = classificationBreakCount;
@@ -389,6 +534,12 @@
                     thematicLabelClass.labelExpression = '"' + classificationFieldAlias + '" CONCAT NEWLINE CONCAT [' + classificationField + ']';
                     thematicLabelClass.minScale = dynamicLabelsMinScale;
                     thematicLayerDrawingOptions.labelClasses = [ thematicLabelClass ];
+
+                    if (map.scale > dynamicLabelsMinScale && showDynamicLabelInScaleRangeMessage)
+                    {
+                        Alert.show("Labels may be configured to only display at certain scales\n You may need to zoom in for the labels to display", "Label visibility warning");
+                        showDynamicLabelInScaleRangeMessage = false;
+                    }
                 }
                 else
                 {
@@ -401,9 +552,16 @@
                 legend.layers = [ thematicLayer ];
             }
 
-            //------------------------------------------------
-            //	Functions for classification and layer changes
-            //------------------------------------------------
+            protected function generateRendererTask_faultHandler(event:FaultEvent):void
+            {
+                Alert.show("Error code(" + event.fault.faultCode + "): " + event.fault.faultString, "Map generation unsuccessful");
+            }
+
+            //--------------------------------------------------------------------------
+            //
+            //  Functions for classification and layer changes
+            //
+            //--------------------------------------------------------------------------
             protected function classificationMethodsDDL_changeHandler(event:IndexChangeEvent):void
             {
                 classificationMethod = DropDownList(event.currentTarget).selectedItem.data;
@@ -434,16 +592,23 @@
                 thematicLayerAlpha = sliderTransparency.value;
                 thematicLayer.alpha = thematicLayerAlpha;
             }
+
+            protected function thematicLayersDropDownList_changeHandler(event:IndexChangeEvent):void
+            {
+                // configuration thematic layer object
+                var selectedItem:Object = DropDownList(event.currentTarget).selectedItem as Object;
+                setThematicLayerConfiguration(selectedItem);
+            }
         ]]>
     </fx:Script>
 
     <fx:Declarations>
         <esri:DetailsTask id="detailsTask"
-                          fault="esriService_faultHandler(event)"
+                          fault="detailsTask_faultHandler(event)"
                           getAllDetailsComplete="detailsTask_getAllDetailsCompleteHandler(event)"/>
         <esri:GenerateRendererTask id="generateRendererTask"
                                    executeComplete="generateRendererTask_executeCompleteHandler(event)"
-                                   fault="esriService_faultHandler(event)"/>
+                                   fault="generateRendererTask_faultHandler(event)"/>
         <esri:AlgorithmicColorRamp id="colorRamp" algorithm="esriHSVAlgorithm"/>
         <esri:LabelClass id="thematicLabelClass">
             <esri:LabelOptions id="thematicLabelOptions"/>
@@ -486,6 +651,30 @@
                                   horizontalAlign="left"
                                   paddingLeft="5"/>
             </s:layout>
+            <!-- thematic layers drop down list -->
+            <s:DropDownList id="thematicLayersDropDownList"
+                            width="100%"
+                            change="thematicLayersDropDownList_changeHandler(event)"
+                            includeInLayout="false"
+                            requireSelection="true"
+                            visible="false">
+                <s:itemRenderer>
+                    <fx:Component>
+                        <s:ItemRenderer>
+                            <s:states>
+                                <s:State name="normal"/>
+                                <s:State name="hovered"/>
+                                <s:State name="selected"/>
+                            </s:states>
+                            <s:Label width="100%" height="20"
+                                     left="5" right="5"
+                                     fontWeight.selected="bold"
+                                     text="{data.label}"
+                                     verticalAlign="middle"/>
+                        </s:ItemRenderer>
+                    </fx:Component>
+                </s:itemRenderer>
+            </s:DropDownList>
             <!-- classification methods user interface -->
             <s:HGroup width="100%"
                       gap="5"

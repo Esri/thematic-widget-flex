@@ -57,7 +57,7 @@ Ask questions on the [Thematic Widget Forum](http://forums.arcgis.com/threads/76
 Find a bug or want to request a new feature?  Please let us know by [submitting an issue](../../issues "Submit an Issue").
 
 ## Contributing
-Anyone and everyone is welcome to [contribute](CONTRIBUTING.md).
+Esri welcomes [contributions](CONTRIBUTING.md) from anyone and everyone. Please see our [guidelines for contributing](https://github.com/esri/contributing).
 
 ## Licensing
 Copyright 2013 Esri
