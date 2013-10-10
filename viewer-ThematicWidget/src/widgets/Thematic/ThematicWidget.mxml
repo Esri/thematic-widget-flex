@@ -653,7 +653,7 @@
             </s:layout>
             <!-- thematic layers drop down list -->
             <s:DropDownList id="thematicLayersDropDownList"
-                            width="90%"
+                            width="100%"
                             change="thematicLayersDropDownList_changeHandler(event)"
                             includeInLayout="false"
                             requireSelection="true"
