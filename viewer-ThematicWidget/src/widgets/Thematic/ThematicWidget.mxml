@@ -443,6 +443,9 @@
 
             protected function thematicLayer_loadHandler(event:LayerEvent):void
             {
+                thematicLayer.removeEventListener(LayerEvent.LOAD, thematicLayer_loadHandler);
+                thematicLayer.removeEventListener(LayerEvent.LOAD_ERROR, thematicLayer_faultHandler);
+
                 thematicDynamicLayerInfosArray = thematicLayer.createDynamicLayerInfosFromLayerInfos();
                 if (thematicLayer.supportsDynamicLayers)
                 {
