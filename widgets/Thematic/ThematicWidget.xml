@@ -20,7 +20,9 @@
     <layers>
         <layer>
             <url>http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer</url>
-            <name>Thematic</name>
+            <name>Thematic States</name>
+            <defaulttransparency>0.9</defaulttransparency>
+            <!-- exact spelling of the layer name from the service -->
             <classificationLayerName>states</classificationLayerName>
             <classificationLayerID>3</classificationLayerID>
             <!-- classification methods: Descs are labels -->
@@ -34,6 +36,8 @@
             <classificationBreaksMin>4</classificationBreaksMin>
             <classificationBreaksMax>12</classificationBreaksMax>
             <classificationBreaksDefault>6</classificationBreaksDefault>
+            <classificationFromColorRamp>0xCECECE</classificationFromColorRamp>
+            <classificationToColorRamp>0x0D538A</classificationToColorRamp>
             <dynamicLabelingPlacement>esriServerPolygonPlacementAlwaysHorizontal</dynamicLabelingPlacement>
             <!-- don't show labels when zoomed out beyond this scale -->
             <dynamicLabelingMinScale>18489298</dynamicLabelingMinScale>
@@ -41,6 +45,35 @@
             <dynamicLabelingFontFamily>Verdana</dynamicLabelingFontFamily>
             <dynamicLabelingFontWeight>bold</dynamicLabelingFontWeight>
             <useproxy>false</useproxy>
+        </layer>
+        <layer>
+            <url>http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer</url>
+            <name>Thematic Counties</name>
+            <defaulttransparency>0.9</defaulttransparency>
+            <!-- exact spelling of the layer name from the service -->
+            <classificationLayerName>Detailed Counties</classificationLayerName>
+            <classificationLayerID>2</classificationLayerID>
+            <!-- classification methods: Descs are labels -->
+            <classificationMethodTypeDescs>Quantile,Equal Interval,Natural Breaks</classificationMethodTypeDescs>
+            <!-- esriClassifyEqualInterval,esriClassifyGeometricalInterval,esriClassifyNaturalBreaks,esriClassifyQuantile -->
+            <classificationMethodTypes>esriClassifyQuantile,esriClassifyEqualInterval,esriClassifyNaturalBreaks</classificationMethodTypes>
+            <!-- classification fields: Descs are labels -->
+            <classificationFieldTypeDescs>Children,Median Age,Pop 2007/SqMi,Males,Females</classificationFieldTypeDescs>
+            <!-- classification fields: Types are fields -->
+            <classificationFieldTypes>AGE_UNDER5,MED_AGE,POP07_SQMI,MALES,FEMALES</classificationFieldTypes>
+            <classificationBreaksMin>5</classificationBreaksMin>
+            <classificationBreaksMax>14</classificationBreaksMax>
+            <classificationBreaksDefault>7</classificationBreaksDefault>
+            <classificationFromColorRamp>0xCECECE</classificationFromColorRamp>
+            <classificationToColorRamp>0x77AE58</classificationToColorRamp>
+            <dynamicLabelingPlacement>esriServerPolygonPlacementAlwaysHorizontal</dynamicLabelingPlacement>
+            <!-- don't show labels when zoomed out beyond this scale -->
+            <dynamicLabelingMinScale>1155581</dynamicLabelingMinScale>
+            <dynamicLabelingFontColor>0x191919</dynamicLabelingFontColor>
+            <dynamicLabelingFontFamily>Verdana</dynamicLabelingFontFamily>
+            <dynamicLabelingFontWeight>bold</dynamicLabelingFontWeight>
+            <useproxy>false</useproxy>
+            <zoomscale>18489289</zoomscale>
         </layer>
     </layers>
     <ui>
@@ -60,13 +93,10 @@
         </icons>
         <transparency>
             <comp_label>Transparency</comp_label>
-            <defaulttransparency>0.9</defaulttransparency>
         </transparency>
         <color_ramp>
             <classificationFromColorRampDisplay>Lower values</classificationFromColorRampDisplay>
-            <classificationFromColorRamp>0xCECECE</classificationFromColorRamp>
             <classificationToColorRampDisplay>Higher values</classificationToColorRampDisplay>
-            <classificationToColorRamp>0x0D538A</classificationToColorRamp>
         </color_ramp>
         <classification>
             <methodsLabel>Classification</methodsLabel>
