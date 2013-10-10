@@ -274,32 +274,23 @@
                     //after the map has loaded sucessfully interact with the map reference
                     if (map.loaded)
                     {
-                        //ask the widget configuration if it wants to use a proxy
-                        useproxy = configXML.layers.layer.useproxy == "true";
-                        if (useproxy)
+                        if (thematicLayersConfig.length > 0)
                         {
-                            //configure proxy url from main configuration file
-                            proxyurl = configData.proxyUrl;
+                            // use the first layer in the configuration as the default
+                            var initialLayer:Object = thematicLayersConfig[0] as Object;
+                            setThematicLayerConfiguration(initialLayer);
+                            // if there are more than one layer in the configuration, enable the drop down list
+                            if (thematicLayersConfig.length > 1)
+                            {
+                                thematicLayersDropDownList.includeInLayout = true;
+                                thematicLayersDropDownList.visible = true;
+                                thematicLayersDropDownList.dataProvider = new ArrayCollection(thematicLayersConfig);
+                            }
                         }
-                        //perform any logic related to the map
-                        thematicLayer = new ArcGISDynamicMapServiceLayer();
-                        thematicLayerName = configXML.layers.layer.classificationLayerName || "states";
-                        thematicLayer.name = configXML.layers.layer.name || "Thematic layer";
-                        thematicLayer.url = configXML.layers.layer.url || "http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer";
-                        thematicLayer.proxyURL = proxyurl;
-                        thematicLayer.addEventListener(LayerEvent.LOAD, thematicLayer_loadHandler, false, 0, true);
-
-                        detailsTask.url = configXML.layers.layer.url || "http://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer";
-                        detailsTask.proxyURL = proxyurl;
-
-                        generateRendererTask.url = configXML.layers.layer.url + "/" + configXML.layers.layer.classificationLayerID;
-                        generateRendererTask.proxyURL = proxyurl;
-
-                        var parsedVisibleLayer:Number = parseInt(configXML.layers.layer.classificationLayerID);
-                        var visibleLayer:Number = isNaN(parsedVisibleLayer) ? 0 : parsedVisibleLayer;
-                        thematicLayer.visibleLayers = new ArrayList([ visibleLayer ]);
-
-                        map.addLayer(thematicLayer);
+                        else
+                        {
+                            Alert.show("There needs to be at least one layer in the configuration file.", "ThematicWidget requirement missing");
+                        }
                     }
                 }
             }
@@ -552,6 +543,30 @@
                                   horizontalAlign="left"
                                   paddingLeft="5"/>
             </s:layout>
+            <!-- thematic layers drop down list -->
+            <s:DropDownList id="thematicLayersDropDownList"
+                            width="90%"
+                            change="thematicLayersDropDownList_changeHandler(event)"
+                            includeInLayout="false"
+                            requireSelection="true"
+                            visible="false">
+                <s:itemRenderer>
+                    <fx:Component>
+                        <s:ItemRenderer>
+                            <s:states>
+                                <s:State name="normal"/>
+                                <s:State name="hovered"/>
+                                <s:State name="selected"/>
+                            </s:states>
+                            <s:Label width="100%" height="20"
+                                     left="5" right="5"
+                                     fontWeight.selected="bold"
+                                     text="{data.label}"
+                                     verticalAlign="middle"/>
+                        </s:ItemRenderer>
+                    </fx:Component>
+                </s:itemRenderer>
+            </s:DropDownList>
             <!-- classification methods user interface -->
             <s:HGroup width="100%"
                       gap="5"
