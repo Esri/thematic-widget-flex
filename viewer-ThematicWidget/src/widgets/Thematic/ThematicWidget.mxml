@@ -76,6 +76,8 @@
             private var settingsPanelIcon:String;
             [Bindable]
             private var settingsPanelLabel:String;
+            //thematic layers
+            private var thematicLayersConfig:Array = [];
             //thematic layer
             [Bindable]
             private var thematicLayer:ArcGISDynamicMapServiceLayer;
@@ -120,6 +122,7 @@
             [Bindable]
             private var dynamicLabelsOffLabel:String;
             private var dynamicLabelsMinScale:Number;
+            private var showDynamicLabelInScaleRangeMessage:Boolean = true;
 
             private var useproxy:Boolean;
             private var proxyurl:String;
