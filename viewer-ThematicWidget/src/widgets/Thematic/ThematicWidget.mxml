@@ -358,6 +358,83 @@
             //---------------------------------------------
             //	Functions for layer load and initialization
             //---------------------------------------------
+            protected function setThematicLayerConfiguration(thematicLayerConfig:Object):void
+            {
+                if (thematicLayer && thematicLayer.loaded)
+                {
+                    map.removeLayer(thematicLayer);
+                }
+
+                //create the layer
+                thematicLayer = new ArcGISDynamicMapServiceLayer(thematicLayerConfig.url);
+                thematicLayer.id = thematicLayerConfig.id;
+                thematicLayer.name = thematicLayerConfig.name;
+                thematicLayer.alpha = thematicLayerConfig.alpha;
+                thematicLayer.visibleLayers = new ArrayList([ thematicLayerConfig.visibleLayer ]);
+                thematicLayer.proxyURL = thematicLayerConfig.proxyurl;
+                thematicLayer.addEventListener(LayerEvent.LOAD, thematicLayer_loadHandler, false, 0, true);
+                thematicLayer.addEventListener(LayerEvent.LOAD_ERROR, thematicLayer_faultHandler, false, 0, true);
+
+                var _classificationMethodsAC:ArrayCollection = thematicLayerConfig.classificationMethodDataProvider as ArrayCollection;
+                if (_classificationMethodsAC.length > 0)
+                {
+                    var classificationMethodItem:Object = _classificationMethodsAC.getItemAt(0);
+                    classificationMethod = classificationMethodItem.data;
+                    classificationMethodsDDL.dataProvider = _classificationMethodsAC;
+                    classificationMethodsDDL.selectedIndex = 0;
+                }
+                else
+                {
+                    classificationMethod = ClassBreaksDefinition.CLASSIFY_EQUAL_INTERVAL;
+                }
+
+                var _classificationFieldsAC:ArrayCollection = thematicLayerConfig.classificationFieldsDataProvider as ArrayCollection;
+                if (_classificationFieldsAC.length > 0)
+                {
+                    var defaultClassificationItem:Object = _classificationFieldsAC.getItemAt(0);
+                    classificationField = defaultClassificationItem.data;
+                    classificationFieldAlias = defaultClassificationItem.label;
+                    classificationFieldsDDL.dataProvider = _classificationFieldsAC;
+                    classificationFieldsDDL.selectedIndex = 0;
+                }
+                else
+                {
+                    classificationField = "POP07_SQMI";
+                    classificationFieldAlias = "Pop 2007";
+                }
+
+                thematicLayerName = thematicLayerConfig.classificationLayerName;
+                //classification breaks
+                classificationNumberOfClassBreaksNS.minimum = thematicLayerConfig.classificationMinimumNumberOfBreaks;
+                classificationNumberOfClassBreaksNS.maximum = thematicLayerConfig.classificationMaximumNumberOfBreaks;
+                classificationNumberOfClassBreaksNS.value = thematicLayerConfig.classificationDefaultNumberOfBreaks;
+
+                //color ramps
+                classificationColorRampFromSelectedColor = thematicLayerConfig.classificationColorRampFromColor;
+                classificationColorRampToSelectedColor = thematicLayerConfig.classificationColorRampToColor;
+
+                //dynamic labels
+                dynamicLabelsMinScale = thematicLayerConfig.thematicLabelOptionsMinScale;
+                //label class and label options
+                thematicLabelClass.labelPlacement = thematicLayerConfig.thematicLabelClassLabelPlacement;
+                thematicLabelOptions.color = thematicLayerConfig.thematicLabelOptionsColor;
+                thematicLabelOptions.fontFamily = thematicLayerConfig.thematicLabelOptionsFontFamily;
+                thematicLabelOptions.fontWeight = thematicLayerConfig.thematicLabelOptionsFontWeight;
+
+                thematicLayerAlpha = thematicLayer.alpha;
+                detailsTask.url = thematicLayer.url;
+                detailsTask.proxyURL = thematicLayer.proxyURL;
+
+                generateRendererTask.url = thematicLayerConfig.generateRendererTaskURL;
+                generateRendererTask.proxyURL = thematicLayer.proxyURL;
+
+                if (thematicLayerConfig.zoomScale > 0)
+                {
+                    map.scale = thematicLayerConfig.zoomScale;
+                }
+                map.addLayer(thematicLayer);
+            }
+
             protected function thematicLayer_loadHandler(event:LayerEvent):void
             {
                 thematicDynamicLayerInfosArray = thematicLayer.createDynamicLayerInfosFromLayerInfos();
