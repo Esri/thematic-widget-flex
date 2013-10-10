@@ -592,6 +592,13 @@
                 thematicLayerAlpha = sliderTransparency.value;
                 thematicLayer.alpha = thematicLayerAlpha;
             }
+
+            protected function thematicLayersDropDownList_changeHandler(event:IndexChangeEvent):void
+            {
+                // configuration thematic layer object
+                var selectedItem:Object = DropDownList(event.currentTarget).selectedItem as Object;
+                setThematicLayerConfiguration(selectedItem);
+            }
         ]]>
     </fx:Script>
 
