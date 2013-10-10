@@ -325,6 +325,14 @@
                 }
             }
 
+            protected function thematicLayer_faultHandler(event:LayerEvent):void
+            {
+                thematicLayer.removeEventListener(LayerEvent.LOAD, thematicLayer_loadHandler);
+                thematicLayer.removeEventListener(LayerEvent.LOAD_ERROR, thematicLayer_faultHandler);
+
+                Alert.show("An error occurred while attempting to load the service (" + ArcGISDynamicMapServiceLayer(event.layer).url + ").\n" + event.fault.faultString, "Service error");
+            }
+
             protected function detailsTask_getAllDetailsCompleteHandler(event:DetailsEvent):void
             {
                 var details:AllDetails = event.allDetails;
@@ -357,9 +365,9 @@
                 }
             }
 
-            protected function esriService_faultHandler(event:FaultEvent):void
+            protected function detailsTask_faultHandler(event:FaultEvent):void
             {
-                Alert.show("Error: " + event.fault.faultString, "Error code: " + event.fault.faultCode);
+                Alert.show("Error code(" + event.fault.faultCode + "): " + event.fault.faultString, "Unable to determine service metadata details");
             }
 
             //---------------------------------------------
@@ -442,11 +450,11 @@
 
     <fx:Declarations>
         <esri:DetailsTask id="detailsTask"
-                          fault="esriService_faultHandler(event)"
+                          fault="detailsTask_faultHandler(event)"
                           getAllDetailsComplete="detailsTask_getAllDetailsCompleteHandler(event)"/>
         <esri:GenerateRendererTask id="generateRendererTask"
                                    executeComplete="generateRendererTask_executeCompleteHandler(event)"
-                                   fault="esriService_faultHandler(event)"/>
+                                   fault="generateRendererTask_faultHandler(event)"/>
         <esri:AlgorithmicColorRamp id="colorRamp" algorithm="esriHSVAlgorithm"/>
         <esri:LabelClass id="thematicLabelClass">
             <esri:LabelOptions id="thematicLabelOptions"/>
